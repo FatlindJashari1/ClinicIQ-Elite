@@ -1,0 +1,1 @@
+{"name":"cliniciq","version":"1.0.0","main":"server.js","dependencies":{"express":"^4.22.1"},"description":"ClinicIQ desktop laboratory management app with local patient database.","scripts":{"start":"node server.js"},"keywords":[],"author":"","license":"ISC","type":"commonjs"}

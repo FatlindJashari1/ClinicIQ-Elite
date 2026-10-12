@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<title>ClinicIQ | Loading...</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap');
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: white; overflow: hidden; }
+.logo-glow { text-shadow: 0 0 50px rgba(59, 130, 246, 0.5); }
+.progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: 2.5s ease-in-out; }
+</style>
+</head>
+<body class="flex flex-col items-center justify-center h-screen">
+<div class="text-center animate-pulse">
+<h1 class="text-8xl font-black italic logo-glow mb-4 uppercase tracking-tighter">CLINIC<span class="text-blue-500">IQ</span></h1>
+<p class="text-slate-500 font-bold tracking-[0.5em] uppercase text-sm">Initializing Beast Mode</p>
+</div>
+
+<div class="w-64 h-1 bg-slate-900 rounded-full mt-12 overflow-hidden border border-white/5">
+<div id="bar" class="progress-bar"></div>
+</div>
+
+<script>
+// Start bar animation
+setTimeout(() => { document.getElementById('bar').style.width = '100%'; }, 100);
+
+// Kur serveri konfirmon lidhjen, pas 2.5 sekondave kalo te dashboard
+
+setTimeout(() => {
+window.location.href = '/dashboard.html';
+}, 2500);
+
+</script>
+</body>
+</html>
+
+
+<div id="analizat-liste-vendi"></div>
+
+<span id="qmimi-tekst" class="text-3xl font-black text-blue-500 italic">20€</span>
+<input id="vC" type="hidden" value="20">
+
+
+
+async function saveV() {
+    try {
+       
+        const inputEmri = document.getElementById('vp') || document.querySelector('input[placeholder*="Emri"]');
+        const selectSherbimi = document.getElementById('sherbimi') || document.querySelector('select');
+        const inputCmimi = document.getElementById('input-cmimi-final') || document.querySelector('.shuma-totale');
+
+        const emriInput = inputEmri.value.trim();
+        if (!emriInput) return alert("Ju lutem shkruani emrin!");
+
+        // 1. Llogaritja e Çmimit (Shërbimi + Analizat)
+        const cmimiBaze = parseFloat(selectSherbimi.selectedOptions[0].getAttribute('data-price')) || 0;
+        let analizaCmimiTotal = 0;
+        let analizatEzgjedhura = [];
+
+        document.querySelectorAll('.ana-checkbox:checked').forEach(cb => {
+            analizatEzgjedhura.push(cb.getAttribute('data-name'));
+            analizaCmimiTotal += parseFloat(cb.getAttribute('data-price')) || 0;
+        });
+        
+
+         let totaliFinal = cmimiBaze + analizaCmimiTotal;
+         
+        // 2. Ndërtimi i të dhënave për Database
+        const data = {
+            emri: emriInput,
+            historia: [{
+                sherbimi: selectSherbimi.value + (analizatEzgjedhura.length > 0 ? ": " + analizatEzgjedhura.join(", ") : ""),
+                diagnoza: document.getElementById('vd')?.value || "",
+                cmimi_total: totaliFinal, 
+                pagesa_e_bere: 0
+            }]
+        };
+
+        // 3. Ruajtja në Database
+        const res = await fetch('/api/patients', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            // Rifreskojmë faqen që pacienti të shfaqet menjëherë te lista
+            location.reload(); 
+        } else {
+            alert("Serveri refuzoi ruajtjen.");
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("GABIM: " + err.message);
+    }
+}
+
+
+
+<!--server.js-->
+const express = require('express');
+const mongoose = require('mongoose');
+const path = require('path');
+const app = express();
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
+
+// LIDHJA ME DATABASE
+mongoose.connect('mongodb://127.0.0.1:27017/ClinicIQ_Final')
+.then(() => console.log('💎 DATABASE: ONLINE')) // Kjo tani do të shfaqet saktë
+.catch(err => console.error('❌ Gabim:', err));
+
+// SKEMA E PLOTË
+const patientSchema = new mongoose.Schema({
+emri: { type: String, required: true },
+telefoni: String,
+numri_personal: String,
+historia: [{
+data: { type: Date, default: Date.now },
+sherbimi: String,
+analizat: String,
+diagnoza: String,
+cmimi_total: { type: Number, default: 0 },
+pagesa_e_bere: { type: Number, default: 0 }
+}],
+terminet: [{ data: String, ora: String, arsyeja: String }]
+});
+
+const userSchema = new mongoose.Schema({
+username: { type: String, required: true, unique: true },
+password: { type: String, required: true },
+email: { type: String, required: true },
+role: { type: String, enum: ['admin', 'doktor'], default: 'doktor' },
+krijuar_me: { type: Date, default: Date.now }
+});
+
+const User = mongoose.model('User', userSchema);
+
+const Patient = mongoose.model('Patient', patientSchema);
+
+//RRUGËT (API)
+app.get('/', (req, res) => {
+res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// 2. Kjo lejon qasjen në Dashboard (Për butonin Demo dhe hyrjen pas Loginit)
+app.get('/dashboard', (req, res) => {
+res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+// Ky funksion bën lidhjen mes butonit "Kyçu" dhe MongoDB
+app.post('/login', async (req, res) => {
+const { username, password } = req.body;
+
+try {
+// Kërko përdoruesin në databazën 'Baza_e_Re'
+const user = await User.findOne({ username: username });
+
+if (user && user.password === password) {
+// Nëse fjalëkalimi është i saktë, dërgoje te dashboard-i
+console.log(`💎 Qasje e lejuar për: ${username}`);
+res.redirect('/dashboard');
+} else {
+// Nëse dështon, ktheje te logini me një mesazh (opsionale)
+res.send("Përdoruesi ose fjalëkalimi i gabuar!");
+}
+} catch (err) {
+res.status(500).send("Gabim gjatë lidhjes me serverin.");
+}
+});
+
+
+// Regjistrimi i plotë
+/*app.post('/api/patients', async (req, res) => {
+try {
+const p = new Patient(req.body);
+await p.save();
+res.status(201).json(p);
+} catch (err) { res.status(400).json(err); }
+});*/
+
+// Regjistrimi i plotë (Përditësuar për Analizat)
+app.post('/api/patients', async (req, res) => {
+    try {
+        const { emri, historia } = req.body;
+
+        // Gjejmë nëse pacienti ekziston me këtë emër
+        let p = await Patient.findOne({ emri: emri });
+
+        if (p) {
+            // Nëse ekziston, thjesht i shtojmë vizitën e re te historia e tij
+            p.historia.push(historia[0]);
+            await p.save();
+            res.status(200).json(p);
+        } else {
+            // Nëse është pacient i ri, e krijojmë nga fillimi
+            const iRi = new Patient(req.body);
+            await iRi.save();
+            res.status(201).json(iRi);
+        }
+    } catch (err) {
+        console.error("Gabim gjatë ruajtjes:", err);
+        res.status(400).json(err);
+    }
+});
+
+// Kërkimi (Për listën në Dashboard)
+app.get('/api/patients/search', async (req, res) => {
+try {
+const query = req.query.q || "";
+const pts = await Patient.find({ emri: new RegExp(query, 'i') });
+res.json(pts);
+} catch (err) { res.status(500).json(err); }
+});
+
+// MARRJA E TË GJITHË PACIENTËVE (Për kontrollin e lojalitetit)
+app.get('/api/patients', async (req, res) => {
+try {
+const pts = await Patient.find();
+res.json(pts);
+} catch (err) { res.status(500).json(err); }
+});
+
+// FINANCAT (RREGULLUAR: Tashmë llogarit saktë Punën, Pagesat Kesh dhe Borxhin)
+app.get('/api/finances/stats', async (req, res) => {
+try {
+const pts = await Patient.find(); // NDRYSHIMI: Find në vend të Delete
+let v = 0, p = 0;
+pts.forEach(pat => {
+pat.historia.forEach(h => {
+v += (h.cmimi_total || 0);
+p += (h.pagesa_e_bere || 0);
+});
+});
+res.json({ vizit_totale: v, pagesat_totale: p, borxhi: v - p });
+} catch (err) {
+res.status(500).json({ error: "Gabim te financat" });
+}
+});
+
+// FSHIRJA (RREGULLUAR SAKTË)
+app.delete('/api/patients/:id', async (req, res) => {
+try {
+await Patient.findByIdAndDelete(req.params.id);
+res.json({ success: true });
+} catch (err) {
+res.status(500).json({ error: "Gabim gjate fshirjes" });
+}
+});
+
+// Kjo krijon llogarinë tënde nëse nuk ekziston
+async function shtoAdminFillestar() {
+const kontrolli = await User.findOne({ username: 'admin2' });
+if (!kontrolli) {
+await User.create({
+username: 'admin2',
+password: 'clinic1',
+email: 'admin@cliniciq.com',
+role: 'admin'
+});
+console.log("✅ LLOGARIA E RE: admin1 / 123.");
+}
+}
+shtoAdminFillestar();
+
+
+const PORT = 3000;
+app.listen(PORT, () => console.log(`🚀 CLINICIQ: ONLINE NE PORTIN ${PORT}`));
+
+
+
+:root {
+--primary: #3498db;
+--secondary: #2ecc71;
+--premium: #e67e22;
+--dark: #2c3e50;
+}
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+margin: 0;
+}
+.login-card {
+background: white;
+padding: 40px;
+border-radius: 15px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+width: 350px;
+text-align: center;
+}
+h2 { color: var(--dark); margin-bottom: 10px; }
+p.subtitle { color: #7f8c8d; font-size: 14px; margin-bottom: 30px; }
+
+.btn {
+width: 100%;
+padding: 12px;
+border: none;
+border-radius: 8px;
+font-weight: bold;
+cursor: pointer;
+transition: 0.3s;
+margin-bottom: 15px;
+text-decoration: none;
+display: block;
+}
+.btn-demo { background: var(--secondary); color: white; }
+.btn-demo:hover { background: #27ae60; }
+
+.btn-login { background: var(--primary); color: white; }
+.btn-login:hover { background: #2980b9; }
+
+.premium-box {
+margin-top: 25px;
+padding-top: 20px;
+border-top: 1px solid #eee;
+}
+.btn-premium { background: white; color: var(--premium); border: 2px solid var(--premium); }
+.btn-premium:hover { background: var(--premium); color: white; }
+
+input {
+width: 100%;
+padding: 12px;
+margin: 8px 0;
+border: 1px solid #ddd;
+border-radius: 8px;
+box-sizing: border-box;
+}
+hr { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
+
+

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClinicIQ - Mirësevini</title>
+<style>
+:root {
+    --primary: #3498db;
+    --secondary: #2ecc71;
+    --premium: #e67e22;
+    --dark-overlay: rgba(20, 22, 28, 0.6); /* Shtresë e errët mbi foto */
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Ngarkimi i fotos nga folderi public */
+    background: linear-gradient(var(--dark-overlay), var(--dark-overlay)), 
+                url('background.png') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.07); /* Efekt xhami i errët */
+    backdrop-filter: blur(15px); /* Mjegullimi i fotos mbrapa */
+    -webkit-backdrop-filter: blur(15px);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Kornizë elegante */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    width: 360px;
+    text-align: center;
+}
+
+h2 { 
+    color: #ffffff; 
+    font-weight: 300; /* Shkronjë e hollë profesionale */
+    letter-spacing: 1px; 
+    margin-bottom: 8px; 
+}
+
+p.subtitle { 
+    color: rgba(255, 255, 255, 0.6); 
+    font-size: 13px; 
+    font-weight: 300; 
+    margin-bottom: 30px; 
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    background: rgba(0, 0, 0, 0.2); /* Inpute që përshtaten me xhamin */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: white;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+input:focus {
+    border-color: var(--primary);
+    background: rgba(0, 0, 0, 0.3);
+    outline: none;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 50px;
+    font-size: 14px; /* Shkronja të vogla siç kërkove */
+    font-weight: 400; /* Jo shumë të theksuara */
+    cursor: pointer;
+    transition: 0.4s;
+    margin-bottom: 15px;
+    text-decoration: none;
+    display: block;
+}
+
+.btn-demo { 
+    background: var(--secondary); 
+    color: white; 
+    opacity: 0.9;
+}
+
+.btn-demo:hover { opacity: 1; transform: translateY(-2px); }
+
+.btn-login { 
+    background: var(--primary); 
+    color: white; 
+    letter-spacing: 0.5px;
+}
+
+.btn-login:hover { 
+    background: #2980b9; 
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    transform: translateY(-2px);
+}
+
+.premium-box {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-premium { 
+    background: transparent; 
+    color: #ffffff; 
+    border: 1px solid var(--premium); 
+    font-size: 11px; /* Më e vogël për butonat dytësorë */
+    text-transform: uppercase;
+}
+
+.btn-premium:hover { 
+    background: var(--premium); 
+}
+
+hr { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0; }
+
+
+
+</style>
+</head>
+<body>
+
+<div class="login-card">
+<h2>ClinicIQ 💎</h2>
+<p class="subtitle">Menaxhimi i Klinikës tuaj</p>
+
+<a href="/dashboard" class="btn btn-demo">Provo Falas (Demo)</a>
+
+<div style="margin: 15px 0; color: #95a5a6; font-size: 12px;">OSE</div>
+
+<form action="/login" method="POST">
+<input type="text" name="username" placeholder="Përdoruesi (Admin)" required>
+<input type="password" name="password" placeholder="Fjalëkalimi" required>
+<button type="submit" class="btn btn-login">Kyçu në Sistemin Tënd</button>
+</form>
+
+<div class="premium-box">
+<p style="font-size: 13px; color: var(--dark);">Dëshironi siguri maksimale?</p>
+<a href="/register" class="btn btn-premium">Krijo Llogari (50€)</a>
+</div>
+</div>
+
+</body>
+</html>

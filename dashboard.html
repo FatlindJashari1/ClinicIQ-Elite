@@ -1,0 +1,1690 @@
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<title>ClinicIQ | Elite Management</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="lista_analizave.js"></script>
+<link rel="stylesheet" href="luxury-style.css">
+<style>
+    @media print {
+    body * { visibility: hidden; } /* Fshih çdo gjë tjetër */
+    #raporti-print, #raporti-print * { visibility: visible; } /* Shfaq vetëm raportin */
+    #raporti-print {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 20px;
+    }
+    .no-print { display: none; }
+}
+
+/* Stilizimi i tabelës në ekran */
+.rez-table { width: 100%; border-collapse: collapse; }
+.rez-table th { background: #f1f5f9; padding: 12px; border: 1px solid #cbd5e1; }
+.rez-table td { padding: 10px; border: 1px solid #e2e8f0; }
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap');
+body { background: #020617; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; height: 100vh; overflow: hidden; }
+.sidebar { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.05); }
+.card-pro { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.05); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.card-pro:hover { transform: translateY(-5px); border-color: #3b82f6; box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.2); }
+.nav-item { cursor: pointer; padding: 1.2rem; display: flex; align-items: center; gap: 1rem; font-weight: 800; border-radius: 18px; transition: 0.3s; color: #94a3b8; }
+.nav-item:hover { background: rgba(255,255,255,0.05); color: #3b82f6; }
+.active-nav { background: linear-gradient(90deg, #2563eb, transparent) !important; color: white !important; border-left: 4px solid #3b82f6; }
+input, select, textarea { background: #0f172a !important; border: 1px solid #1e293b !important; color: white !important; padding: 14px; border-radius: 12px; outline: none; width: 100%; font-weight: 500; }
+input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+.logo-glow { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+
+@media print {
+body * { display: none !important; }
+#print-section, #print-section * { display: block !important; visibility: visible !important; }
+#print-section { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 0; margin: 0; }
+}
+#print-section { display: none; }
+#result-modal input { min-width: 0; }
+@media (max-width: 900px) { body.flex.h-screen { min-width: 1000px; } }
+
+/* ClinicIQ: statistikat e regjistrimit - përmirësim vizual pa ndryshuar funksionet ekzistuese */
+.dashboard-stats-grid {
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1.15rem; margin:0 0 2.5rem;
+}
+.dashboard-stats-grid .stat-card {
+  position:relative; display:flex; align-items:center; gap:1rem; min-width:0;
+  padding:1.25rem 1.15rem; border:1px solid rgba(148,163,184,.16);
+  border-top:3px solid var(--stat-accent,#3b82f6); border-radius:1.25rem;
+  background:linear-gradient(145deg,rgba(15,23,42,.98),rgba(10,17,32,.96));
+  box-shadow:0 12px 28px rgba(0,0,0,.16); transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+  cursor:pointer; outline:none;
+}
+.dashboard-stats-grid .stat-card::after {content:"↗";position:absolute;right:1rem;top:.8rem;color:var(--stat-accent,#60a5fa);font-size:.85rem;opacity:.7}
+.dashboard-stats-grid .stat-card:hover,.dashboard-stats-grid .stat-card:focus-visible {
+  transform:translateY(-3px); border-color:color-mix(in srgb,var(--stat-accent,#3b82f6) 55%,transparent);
+  box-shadow:0 16px 34px rgba(0,0,0,.26),0 0 0 1px color-mix(in srgb,var(--stat-accent,#3b82f6) 18%,transparent);
+}
+.dashboard-stats-grid .card-blue {--stat-accent:#60a5fa}
+.dashboard-stats-grid .card-green {--stat-accent:#34d399}
+.dashboard-stats-grid .card-orange {--stat-accent:#fbbf24}
+.dashboard-stats-grid .card-red {--stat-accent:#fb7185}
+.dashboard-stats-grid .stat-icon {display:flex;align-items:center;justify-content:center;flex:0 0 3rem;width:3rem;height:3rem;border-radius:1rem;background:color-mix(in srgb,var(--stat-accent,#3b82f6) 13%,transparent);font-size:1.45rem}
+.dashboard-stats-grid .stat-info {min-width:0;padding-right:.5rem}
+.dashboard-stats-grid .stat-info p {margin:0 0 .45rem;color:#9caec9;font-size:.68rem;font-weight:800;line-height:1.35;letter-spacing:.07em;text-transform:uppercase}
+.dashboard-stats-grid .stat-info h3 {margin:0;color:#f8fafc;font-size:clamp(1.35rem,1.8vw,1.8rem);font-weight:900;letter-spacing:-.04em;line-height:1.1;overflow-wrap:anywhere}
+@media(max-width:1100px){.dashboard-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem}}
+@media(max-width:560px){.dashboard-stats-grid{grid-template-columns:1fr}.dashboard-stats-grid .stat-card{padding:1rem}}
+
+</style>
+</head>
+<body class="flex h-screen">
+
+<aside class="sidebar w-80 p-8 flex flex-col">
+<div class="flex items-center gap-4 mb-12">
+<div class="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-500/40"><i data-lucide="stethoscope" class="text-white"></i></div>
+<span class="text-2xl font-black italic logo-glow tracking-tighter uppercase">CLINIC<span class="text-blue-500">IQ</span></span>
+</div>
+<nav class="space-y-2 flex-1">
+<div onclick="showSec('vizitat')" id="nav-vizitat" class="nav-item active-nav"><i data-lucide="activity"></i> VIZITAT & ANALIZAT</div>
+<div onclick="showSec('regjistri')" id="nav-regjistri" class="nav-item"><i data-lucide="clipboard-list"></i> REGJISTRI & HISTORIA</div>
+<div onclick="showSec('arka')" id="nav-arka" class="nav-item"><i data-lucide="pie-chart"></i> ARKA & FINANCAT</div>
+<div onclick="showSec('terminet')" id="nav-terminet" class="nav-item"><i data-lucide="calendar"></i> TERMINET & OFERTAT</div>
+<div onclick="showSec('admin')" id="nav-admin" class="nav-item"><i data-lucide="shield-check"></i> CILËSIMET / ADMIN</div>
+</nav>
+<div class="p-6 bg-blue-600/10 rounded-[2rem] border border-blue-500/20">
+<div class="flex items-center gap-2 text-blue-400 mb-1">
+<i data-lucide="user" class="w-3 h-3"></i>
+<span class="text-[10px] font-black uppercase tracking-widest">Administrator</span>
+</div>
+<p id="live-clock" class="text-2xl font-black tabular-nums italic">00:00:00</p>
+</div>
+</aside>
+
+<main class="flex-1 p-12 overflow-y-auto bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent">
+<div class="mb-10 flex justify-between items-end">
+<div>
+<h2 id="view-title" class="text-6xl font-black italic tracking-tighter">Operacionet</h2>
+<p id="view-desc" class="text-slate-500 mt-2 font-medium italic">Mirësevini në sistemin qendror.</p>
+</div>
+<div class="relative flex items-center">
+<i data-lucide="search" class="absolute left-4 text-slate-500 w-5 h-5 pointer-events-none"></i>
+<input type="text" onkeyup="loadData(this.value)" class="pl-12 w-96 rounded-2xl border-none shadow-2xl bg-[#0f172a] text-white p-4 outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Kërko pacientin ose analizat...">
+</div>
+</div>
+
+
+<div id="display-area" class="grid gap-6"></div>
+</main>
+
+<div id="result-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center z-50">
+<div class="bg-slate-900 border border-white/10 p-6 md:p-8 rounded-[2rem] w-[min(1100px,96vw)] max-h-[92vh] overflow-y-auto shadow-2xl">
+<div class="flex flex-wrap items-start justify-between gap-3 mb-5"><div><h3 class="text-2xl font-black italic text-blue-500 uppercase">Rezultatet e Analizave</h3><p id="result-patient-subtitle" class="text-xs text-slate-400 mt-1"></p></div><span class="text-xs text-slate-500">Plotësoni rezultatet për analizat e kësaj vizite</span></div>
+<div id="analizat-input-fields" class="space-y-3 mb-6"></div>
+<p class="text-[11px] leading-relaxed text-amber-300/90 mb-5">Shënim: Intervalet referente janë orientuese për të rriturit kur shënohet interval numerik. Para përdorimit klinik, verifikojini sipas metodës, reagentit/analizatorit, moshës, gjinisë dhe protokollit të validuar të laboratorit. Për testet hormonale dhe imunologjike, kufijtë e kit-it mund të ndryshojnë.</p>
+<div class="flex flex-wrap gap-3">
+<button onclick="ruajRezultatet()" class="flex-1 min-w-[180px] bg-blue-600 p-4 rounded-xl font-black uppercase italic hover:bg-blue-500">Ruaj rezultatet</button>
+<button onclick="gjeneroRaportin()" class="flex-1 min-w-[180px] bg-green-600 p-4 rounded-xl font-black uppercase italic hover:bg-green-500">Ruaj dhe printo raportin</button>
+<button onclick="mshelModalin()" class="bg-slate-800 p-4 rounded-xl font-black uppercase italic px-8">Mbyll</button>
+</div>
+</div>
+</div>
+
+<div id="print-section" class="hidden" aria-hidden="true"></div>
+
+<script>
+const cmimorja = {
+"Kontrollë Standarde": { cmimi: 20, analizat: [] },
+"Analiza Laboratorike": { cmimi: 45, analizat: ["Hemogram", "Glikemi", "Urina Komplet", "Lipidogram", "Kreatininë"] },
+"Ekografi / Rentgen": { cmimi: 30, analizat: ["Eko Abdominale", "Eko e Gjirit", "Rentgen Pulmonar"] },
+"Konsultë Specialistike": { cmimi: 50, analizat: ["EKG", "Konsultë Kardiologu", "Tensioni"] }
+};
+
+let tempPatientPrint = null;
+let activeResultContext = null;
+
+setInterval(() => {
+const clock = document.getElementById('live-clock');
+if(clock) clock.innerText = new Date().toLocaleTimeString('sq-AL');
+}, 1000);
+lucide.createIcons();
+
+function ndryshoSherbimin(val) {
+const info = cmimorja[val];
+if(!info) return;
+const shumaDisplay = document.getElementById('shuma-vizual');
+const shumaInput = document.getElementById('input-cmimi-final');
+let totaliAnalizave = 0;
+document.querySelectorAll('.ana-checkbox:checked').forEach(cb => {
+totaliAnalizave += parseFloat(cb.value) || 0;
+});
+const shumaFinale = (parseFloat(info.cmimi) || 0) + totaliAnalizave;
+if (shumaDisplay) shumaDisplay.innerText = shumaFinale.toFixed(2) + " €";
+if (shumaInput) shumaInput.value = shumaFinale;
+const listaVendi = document.getElementById('analizat-liste-vendi');
+if(listaVendi && info.analizat.length > 0) {
+listaVendi.innerHTML = `<p class="text-[10px] font-black uppercase opacity-40 mb-2 italic">Analizat e përfshira:</p>
+<ul class="space-y-1 bg-blue-600/5 p-4 rounded-xl border border-blue-500/10">
+${info.analizat.map(a => `<li class="text-xs italic text-blue-400 flex items-center gap-2"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> ${a}</li>`).join('')}</ul>`;
+} else if (listaVendi) { listaVendi.innerHTML = ""; }
+}
+
+async function showSec(sec) {
+const area = document.getElementById('display-area');
+const title = document.getElementById('view-title');
+const desc = document.getElementById('view-desc');
+
+document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active-nav'));
+document.getElementById('nav-' + sec).classList.add('active-nav');
+
+
+
+if(sec === 'vizitat') {
+title.innerText = "Vizitat & Analizat";
+desc.innerText = "Regjistro vizita të reja, analiza laboratorike dhe shërbime.";
+area.innerHTML = `
+
+
+<div class="dashboard-stats-grid">
+    <div class="stat-card card-blue" role="button" tabindex="0" aria-label="Hap regjistrin e pacientëve" onclick="showSec('regjistri')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSec('regjistri')}">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+            <p>Pacientët sot</p>
+            <h3 id="stat-total-pacientet">0</h3>
+        </div>
+    </div>
+
+    <div class="stat-card card-green" role="button" tabindex="0" aria-label="Hap terminet" onclick="showSec('terminet')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSec('terminet')}">
+        <div class="stat-icon">📅</div>
+        <div class="stat-info">
+            <p>Today's Appointments</p>
+            <h3 id="stat-vizitat-sot">0</h3>
+        </div>
+    </div>
+
+    <div class="stat-card card-orange" role="button" tabindex="0" aria-label="Hap regjistrin për analizat në pritje" onclick="showSec('regjistri')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSec('regjistri')}">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+            <p>Pending Tests</p>
+            <h3 id="stat-analizat-pritje">0</h3>
+        </div>
+    </div>
+
+    <div class="stat-card card-red" role="button" tabindex="0" aria-label="Hap financat dhe listën e borxheve" onclick="showSec('arka')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSec('arka')}">
+        <div class="stat-icon">💶</div>
+        <div class="stat-info">
+            <p>Invoices Due</p>
+            <h3 id="stat-borxhet">0.00 €</h3>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="card-pro p-10 rounded-[3rem] grid grid-cols-2 gap-8">
+<div class="space-y-4">
+<label class="text-xs font-black uppercase ml-2 opacity-40">Të dhënat e pacientit</label>
+<div class="grid grid-cols-2 gap-3">
+<input id="vEmri" placeholder="Emri">
+<input id="vMbiemri" placeholder="Mbiemri">
+</div>
+<input id="vTel" placeholder="Numri i telefonit">
+<div class="grid grid-cols-2 gap-3">
+<input id="vQyteti" placeholder="Qyteti">
+<select id="vGjinia">
+<option value="">Gjinia</option>
+<option value="Femër">Femër</option>
+<option value="Mashkull">Mashkull</option>
+</select>
+</div>
+<div class="mb-4">
+    <label class="text-xs font-black uppercase ml-2 opacity-40 text-white">Analizat e Laboratorit</label>
+    <div class="relative mt-2 mb-3">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none">⌕</span>
+        <input id="kerko-analizen" type="search" placeholder="Kërko analizën (p.sh. kol)..." autocomplete="off"
+               oninput="kerkoAnalizat(this.value)"
+               class="w-full rounded-xl border border-blue-500/20 bg-slate-900/80 py-3 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10">
+        <span id="rezultati-kerkim-analiza" class="mt-1 block pl-2 text-[10px] text-slate-500">Shkruaj disa shkronja për të gjetur analizën</span>
+    </div>
+    <div id="kontenieri-analizave" class="space-y-4 h-[460px] overflow-y-auto bg-black/20 p-4 rounded-2xl border border-white/5 shadow-inner mt-2">
+        </div>
+</div>
+</div>
+<div class="space-y-4">
+<label class="text-xs font-black uppercase ml-2 opacity-40">Pagesa dhe zbritja</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div><label class="text-[10px] uppercase text-slate-400">Zbritja (€)</label><input id="vZbritja" type="number" min="0" step="0.01" value="0" oninput="llogaritCmiminVizites()" placeholder="0.00"></div>
+<div><label class="text-[10px] uppercase text-slate-400">Mënyra e pagesës</label><select id="vPagesaLloji"><option value="Cash">Cash (para në dorë)</option></select></div>
+<div><label class="text-[10px] uppercase text-slate-400">Shuma e paguar (€)</label><input id="vPagesaBere" type="number" min="0" step="0.01" value="0" oninput="llogaritCmiminVizites()" placeholder="0.00"></div>
+<div class="rounded-xl bg-black/20 p-3"><p class="text-[10px] uppercase text-slate-400">Mbetet për pagesë</p><p id="vBorxhiVizual" class="text-xl font-black text-amber-400">0.00 €</p></div>
+</div>
+<div class="flex items-center justify-between gap-4 mt-4">
+<div class="flex flex-col items-start px-4"><span class="text-[10px] font-black uppercase opacity-40">Totali pas zbritjes</span><span id="shuma-vizual" class="text-3xl font-black text-blue-500 italic">0.00 €</span><input id="input-cmimi-final" type="hidden" value="0"></div>
+<button onclick="saveV()" class="flex-1 h-16 bg-blue-600 rounded-2xl font-black hover:bg-blue-500 transition-all uppercase italic text-white">RUAI VIZITËN</button>
+</div>
+</div>
+</div>
+<div class="card-pro p-5 rounded-2xl mt-6 mb-4 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <label for="filtri-data-vizitat" class="block text-xs font-bold uppercase tracking-widest text-blue-300 mb-2">Pacientët sipas datës së vizitës</label>
+    <input id="filtri-data-vizitat" type="date" value="${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}" onchange="loadData()" class="rounded-xl bg-slate-900 text-white border border-blue-500/30 p-3">
+  </div>
+  <div class="text-sm text-slate-300">Shfaqen vetëm pacientët me vizitë në datën e zgjedhur. Të dhënat e tjera ruhen.</div>
+</div>
+<div id="data-list" class="grid gap-4 mt-4"></div>`;
+
+
+// Funksioni për përditësimin e Dashboard-it Inovativ
+async function updateDashboardStats() {
+    try {
+        // Marrim të dhënat nga serveri yt localhost:3000
+        const response = await fetch('/api/pacientet'); 
+        const pacientet = await response.json();
+
+        let totalPacientet = 0;
+        let vizitatSot = 0;
+        let nePritje = 0;
+        let borxhiTotal = 0;
+
+        // Përdor datën lokale të kompjuterit, jo UTC, që regjistrimet pas mesnatës
+        // të numërohen në ditën e saktë lokale.
+        const tani = new Date();
+        const sot = `${tani.getFullYear()}-${String(tani.getMonth() + 1).padStart(2, '0')}-${String(tani.getDate()).padStart(2, '0')}`;
+
+        pacientet.forEach(p => {
+            // 1. Numëro pacientët e regjistruar sot, sipas datës së krijimit të kartelës.
+            const dataKrijimitRaw = p.krijuar_me || p.data_regjistrimit || '';
+            let dataKrijimit = String(dataKrijimitRaw).slice(0, 10);
+            if (dataKrijimitRaw) {
+                const dataKrijimitObj = new Date(dataKrijimitRaw);
+                if (!Number.isNaN(dataKrijimitObj.getTime())) {
+                    dataKrijimit = `${dataKrijimitObj.getFullYear()}-${String(dataKrijimitObj.getMonth() + 1).padStart(2, '0')}-${String(dataKrijimitObj.getDate()).padStart(2, '0')}`;
+                }
+            }
+            if (dataKrijimit === sot) totalPacientet++;
+
+            // 2. Llogaritja e vizitave për sot (sjellja ekzistuese ruhet).
+            if (p.data_regjistrimit === sot) vizitatSot++;
+
+            // 2. Kontrolli i statusit (Pika 6 te letra)
+            const vizitaFundit = p.historia?.[p.historia.length - 1];
+            if (vizitaFundit && vizitaFundit.statusi === "Në Pritje") {
+                nePritje++;
+            }
+
+            // 3. Llogaritja e financave (Invoices Due)
+            if (p.borxhi) borxhiTotal += parseFloat(p.borxhi);
+        });
+
+        // Injektimi i vlerave në kutitë e reja
+        document.getElementById('stat-total-pacientet').innerText = totalPacientet;
+        document.getElementById('stat-vizitat-sot').innerText = vizitatSot;
+        document.getElementById('stat-analizat-pritje').innerText = nePritje;
+        document.getElementById('stat-borxhet').innerText = borxhiTotal.toFixed(2) + " €";
+
+    } catch (err) {
+        console.error("Gabim gjatë ngarkimit të statistikave:", err);
+    }
+}
+
+// Thirrja e funksionit sa herë që hapet seksioni i vizitave
+// Shtoje këtë rresht brenda funksionit tënd showSec('vizitat') pas area.innerHTML
+updateDashboardStats();
+
+
+loadData();
+mbushAnalizat();
+}
+else if(sec === 'arka') {
+title.innerText = "Arka & Financat";
+desc.innerText = "Pasqyra e plotë financiare e klinikës.";
+const dataSot = new Date();
+const dataLokale = `${dataSot.getFullYear()}-${String(dataSot.getMonth()+1).padStart(2,'0')}-${String(dataSot.getDate()).padStart(2,'0')}`;
+area.innerHTML = `
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+  <div>
+    <p class="text-xs font-black uppercase tracking-widest text-blue-300">Pasqyra ditore</p>
+    <p class="text-sm text-slate-400 mt-1">Financat shfaqen vetëm për datën e zgjedhur.</p>
+  </div>
+  <label class="flex items-center gap-3 rounded-2xl border border-blue-400/20 bg-slate-900/70 px-4 py-3">
+    <i data-lucide="calendar-days" class="text-blue-300"></i>
+    <span class="text-xs font-bold uppercase text-slate-400">Data</span>
+    <input id="financa-data" type="date" value="${dataLokale}" onchange="ngarkoFinancatPerDate(this.value)"
+      class="rounded-lg border border-blue-400/20 bg-slate-800 px-3 py-2 text-white outline-none focus:border-blue-300">
+  </label>
+</div>
+<div id="financa-kartelat" class="grid grid-cols-3 gap-8"></div>`;
+await ngarkoFinancatPerDate(dataLokale);
+}
+else if(sec === 'regjistri') {
+title.innerText = "Regjistri & Historia";
+desc.innerText = "Kartelat e pacientëve dhe historia e shërbimeve.";
+const dataSot = new Date();
+const dataLokale = `${dataSot.getFullYear()}-${String(dataSot.getMonth()+1).padStart(2,'0')}-${String(dataSot.getDate()).padStart(2,'0')}`;
+area.innerHTML = `
+<div class="card-pro p-5 rounded-2xl mb-4 flex flex-wrap items-center justify-between gap-4">
+  <div><label for="filtri-data-pacienteve" class="block text-xs font-bold uppercase tracking-widest text-blue-300 mb-2">Data e vizitave</label><input id="filtri-data-pacienteve" type="date" value="${dataLokale}" onchange="loadData()" class="rounded-xl bg-slate-900 text-white border border-blue-500/30 p-3"></div>
+  <div class="text-sm text-slate-300">Shfaqen vetëm pacientët me vizitë në datën e zgjedhur.</div>
+</div>
+<div id="data-list" class="grid gap-4"></div>`;
+loadData();
+}
+else if(sec === 'terminet') {
+title.innerText = "Terminet & Ofertat";
+desc.innerText = "Programi i besnikërisë dhe ofertat aktive.";
+
+const res = await fetch('/api/patients');
+const pts = await res.json();
+const lojal = pts.filter(p => p.historia.length >= 2);
+
+area.innerHTML = `
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="card-pro p-10 rounded-[3rem] bg-gradient-to-br from-blue-600/10 to-transparent">
+<div class="flex items-center gap-4 mb-6">
+<div class="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/30"><i data-lucide="award" class="text-white"></i></div>
+<h3 class="text-2xl font-black italic uppercase tracking-tighter text-white">Pacientët Lojalë</h3>
+</div>
+<div class="space-y-3">
+${lojal.length > 0 ? lojal.map(p => `
+<div class="flex justify-between items-center p-5 bg-slate-900/60 rounded-2xl border border-blue-500/10 group hover:border-blue-500/40 transition-all">
+<div>
+<p class="font-black italic uppercase text-lg tracking-tighter text-blue-400">${p.emri}</p>
+<p class="text-[10px] font-bold opacity-40 uppercase text-slate-300">${p.historia.length} Vizita të kryera</p>
+</div>
+<div class="bg-green-500/20 text-green-400 text-[10px] px-3 py-1 rounded-full font-black italic uppercase border border-green-500/30">Aktiv -20%</div>
+</div>
+`).join('') : '<p class="opacity-30 italic text-sm p-4 text-center font-bold">Nuk ka akoma pacientë lojalë.</p>'}
+</div>
+</div>
+<div class="card-pro p-10 rounded-[3rem] border-dashed border-2 border-slate-800 flex flex-col justify-center items-center text-center">
+<i data-lucide="sparkles" class="w-12 h-12 text-blue-500/20 mb-4"></i>
+<h3 class="text-xl font-black italic opacity-20 uppercase">Ofertat e Sezonit</h3>
+<p class="text-xs opacity-10 font-bold mt-2 italic text-slate-500">MODULI I REKLAMAVE SË SHPEJTI...</p>
+</div>
+</div>`;
+}
+else if(sec === 'admin') {
+title.innerText = "Cilësimet";
+desc.innerText = "Konfigurimi i sistemit ClinicIQ.";
+area.innerHTML = `
+<div class="card-pro p-10 rounded-[3rem] max-w-2xl">
+<h3 class="font-black text-2xl mb-6 italic uppercase tracking-tighter">Konfigurimi i Sistemit</h3>
+<div class="space-y-4">
+<div class="p-6 bg-slate-900/50 rounded-2xl flex justify-between items-center border border-white/5">
+<div class="flex items-center gap-4"><div class="p-2 bg-blue-600/20 rounded-lg"><i data-lucide="hospital" class="text-blue-500 w-5 h-5"></i></div><span class="font-bold text-white">Emri i Klinikës</span></div>
+<b class="text-blue-500 italic uppercase text-white">ClinicIQ Elite</b>
+</div>
+<div class="p-6 bg-slate-900/50 rounded-2xl flex justify-between items-center border border-white/5">
+<div class="flex items-center gap-4"><div class="p-2 bg-green-600/20 rounded-lg"><i data-lucide="database" class="text-green-500 w-5 h-5"></i></div><span class="font-bold text-white">Statusi i Serverit</span></div>
+<b class="text-green-500 italic uppercase flex items-center gap-2"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> ONLINE</b>
+</div>
+<div class="p-6 bg-slate-900/50 rounded-2xl flex justify-between items-center border border-white/5">
+<div class="flex items-center gap-4"><div class="p-2 bg-purple-600/20 rounded-lg"><i data-lucide="refresh-cw" class="text-purple-500 w-5 h-5"></i></div><span class="font-bold text-white">Backup Automatik</span></div>
+<b class="text-xs text-slate-500 font-black">I AKTIVIZUAR</b>
+</div>
+</div>
+</div>`;
+}
+lucide.createIcons();
+}
+
+
+/*async function saveV() {
+try {
+const emriInput = document.getElementById('vP').value.trim();
+const sherbimi = document.getElementById('vS').value;
+const diagnoza = document.getElementById('vD').value;
+const analizatTekst = document.getElementById('vA').value;
+const cmimiOrigjinal = parseFloat(document.getElementById('vC').value);
+
+if(!emriInput) return alert("Ju lutem shkruani emrin!");
+
+// Kjo pjesë mund të jetë bllokuar nëse serveri s'ka këtë API
+let cmimiFinal = cmimiOrigjinal;
+try {
+const res = await fetch('/api/patients');
+const gjithePacientet = await res.json();
+const pExist = gjithePacientet.find(p => p.emri.toLowerCase() === emriInput.toLowerCase());
+
+if(pExist && pExist.historia && pExist.historia.length >= 2) {
+alert("🎁 ZBRITJE E RE: Ky pacient ka " + pExist.historia.length + " vizita!");
+cmimiFinal = cmimiOrigjinal * 0.8;
+}
+} catch (e) {
+console.log("Kontrolli i lojalitetit dështoi, po vazhdoj me ruajtjen normale.");
+}
+
+const data = {
+emri: emriInput,
+historia: [{
+sherbimi: sherbimi,
+diagnoza: diagnoza,
+analizat: analizatTekst,
+cmimi_total: cmimiFinal,
+pagesa_e_bere: 0
+}]
+};
+
+await fetch('/api/patients', {
+method: 'POST',
+headers: {'Content-Type': 'application/json'},
+body: JSON.stringify(data)
+});
+
+const info = cmimorja[sherbimi];
+if(info && info.analizat.length > 0) {
+// Sigurohu që ky emër variabli është i njëjtë me atë në fillim të script-it tënd
+tempPatientData = { emri: emriInput, sherbimi: sherbimi, analizat: info.analizat };
+shfaqModalinRezultateve();
+} else {
+alert("Vizita u ruajt!");
+showSec('vizitat');
+}
+} catch (err) {
+console.error("Gabim gjatë ruajtjes:", err);
+alert("Ndodhi një gabim teknik. Shiko Console (F12).");
+}
+}*/
+
+/*async function saveV() {
+try {
+const emriInput = document.getElementById('vP').value.trim();
+const sherbimi = document.getElementById('vS').value;
+const diagnoza = document.getElementById('vD').value;
+const analizatTekst = document.getElementById('vA').value;
+const cmimiOrigjinal = parseFloat(document.getElementById('vC').value);
+
+if(!emriInput) return alert("Ju lutem shkruani emrin!");
+
+let cmimiFinal = cmimiOrigjinal;
+
+// Provon kontrollin e lojalitetit por nuk e bllokon ruajtjen nëse ka error
+try {
+const resLojal = await fetch('/api/patients');
+if(resLojal.ok) {
+const gjithePacientet = await resLojal.json();
+const pExist = gjithePacientet.find(p => p.emri.toLowerCase() === emriInput.toLowerCase());
+if(pExist && pExist.historia && pExist.historia.length >= 2) {
+alert("🎁 ZBRITJE: Ky pacient ka mbi 2 vizita! U aplikua zbritja 20%.");
+cmimiFinal = cmimiOrigjinal * 0.8;
+}
+}
+} catch (e) {
+console.warn("Lojaliteti nuk u kontrollua, vazhdojmë me ruajtjen.");
+}
+
+const data = {
+emri: emriInput,
+historia: [{
+sherbimi: sherbimi,
+diagnoza: diagnoza,
+analizat: analizatTekst,
+cmimi_total: cmimiFinal,
+pagesa_e_bere: 0
+}]
+};*/
+
+const vleratReferente = {
+    "SE (Eritrosedimentacioni)": "0–20 mm/orë",
+    "Strisho periferike e gjakut": "—",
+    "Hemogrami": "—",
+    "Retikulocitet": "0.5–2.5 %",
+    "Gr. Gjakut ABO/Rh": "—",
+    "Urina": "—",
+    "Glikemia": "70–99 mg/dL",
+    "Urea": "15–40 mg/dL",
+    "Kreatinina": "0.5–1.3 mg/dL",
+    "Klirensi i kreatininës": "—",
+    "Acidi Urik": "2.4–7.0 mg/dL",
+    "Acidi Urik në urine të çastit": "—",
+    "Acidi Urik në urine 24h": "250–750 mg/24 h",
+    "Trigliceridet": "<150 mg/dL",
+    "Kolesteroli": "<200 mg/dL",
+    "Kolesteroli-HDL": ">40 mg/dL",
+    "Kolesteroli-LDL": "<100 mg/dL",
+    "APO A1 (Apolipoprotein A1)": "110–200 mg/dL",
+    "APO B (Apolipoprotein B)": "60–130 mg/dL",
+    "ALT (Al. transaminaza)": "7–56 U/L",
+    "AST (As. transaminaza)": "10–40 U/L",
+    "Bilirubina Totale": "0.2–1.2 mg/dL",
+    "Bilirubina Direkte": "0.0–0.3 mg/dL",
+    "GGT - Gama glutamil transpeptidaza": "5–61 U/L",
+    "ALP - Fosfataza alkaline": "44–147 U/L",
+    "ACPT - Fosfataza acidike Totale": "—",
+    "Amilaza": "30–110 U/L",
+    "Amilaza - në urinë": "—",
+    "Lipase": "13–60 U/L",
+    "Ceruloplasmin": "20–40 mg/dL",
+    "Natrium": "135–145 mmol/L",
+    "Natriumi-Na në urinë të çastit": "—",
+    "Natriumi-Na në urinë 24h": "40–220 mmol/24 h",
+    "Kalium": "3.5–5.1 mmol/L",
+    "Kaliumi-K në urinë të çastit": "—",
+    "Kalcium": "8.6–10.2 mg/dL",
+    "Calciumi i jonizuar": "1.12–1.32 mmol/L",
+    "Kalciumi në urinë të çastit": "—",
+    "Kalciumi në urinë 24h": "100–300 mg/24 h",
+    "Klori": "98–107 mmol/L",
+    "uACR - Urine Albumin-Creatinine Ratio": "<30 mg/g",
+    "uPCR - Urine Protein-Creatinine Ratio": "<200 mg/g",
+    "CK": "—",
+    "CK-MB": "—",
+    "Proteina totale": "6.3–7.9 g/dL",
+    "Proteinurina e çastit": "—",
+    "Proteina në lëng cerebrospinal": "15–45 mg/dL",
+    "Proteina totale në lëng pleural": "—",
+    "Microalbumin 24h urinë": "<30 mg/24 h",
+    "Microalbumin e çastit": "<30 mg/g",
+    "Magneziumi": "1.7–2.2 mg/dL",
+    "Magneziumi në urinë 24h": "12–300 mg/24 h",
+    "Fosfori": "2.5–4.5 mg/dL",
+    "Fosfori në urinë të çastit": "—",
+    "Zinc": "60–120 µg/dL",
+    "Bakër": "70–140 µg/dL",
+    "ACE (Angiotensin Converting Enzyme)": "—",
+    "ADA (Adenozine De Aminaza)": "—",
+    "eGFR - Shkalla e vlerësuar e filtrimit glomerular": "≥90 mL/min/1.73 m²",
+    "LDH - Laktodehidrogjenaza": "140–280 U/L",
+    "Hekuri-Fe": "50–175 µg/dL",
+    "TIBC": "250–450 µg/dL",
+    "UIBC": "150–375 µg/dL",
+    "Ferritin": "15–400 ng/mL",
+    "Transferina": "200–360 mg/dL",
+    "Transferrin saturation": "20–50 %",
+    "Vitamin B12": "200–900 pg/mL",
+    "Acidi Folik": "3–17 ng/mL",
+    "CRP (Proteina C-reaktive)": "<5 mg/L",
+    "PCT - Prokalcitonina": "<0.05 ng/mL",
+    "IL-6 (interleukin-6)": "<7 pg/mL",
+    "Proteina C-reactive (high sensitive)": "1–3 mesatar",
+    "High sensitive Troponin T": "—",
+    "NT-proBNP": "—",
+    "Lipoprotein (a)": "<30 mg/dL",
+    "Homocysteine": "5–15 µmol/L",
+    "PT-sec (Prothrombin Time)": "11–13.5 s",
+    "PT-% (Prothrombin Time)": "70–100 %",
+    "INR ratio": "0.8–1.2",
+    "aPTT": "25–35 s",
+    "Protein C": "70–140 %",
+    "Protein S": "60–140 %",
+    "Lupus antikoagulants": "—",
+    "Antithrombin III": "80–120 %",
+    "Faktori II i Koagulimit": "70–120 %",
+    "Faktori V i Koagulimit": "70–120 %",
+    "Faktori VII i Koagulimit": "70–120 %",
+    "Faktori VIII i Koagulimit": "50–150 %",
+    "Faktori IX i Koagulimit": "50–150 %",
+    "Faktori X i Koagulimit": "70–120 %",
+    "Faktori XI i Koagulimit": "65–150 %",
+    "Faktori XII i Koagulimit": "50–150 %",
+    "Faktori XIII i Koagulimit": "70–140 %",
+    "Coombsi indirect": "—",
+    "Coombsi direct": "—",
+    "Fibringjeni": "200–400 mg/dL",
+    "D-Dimeri": "<500 ng/mL FEU",
+    "ASTO (Antistreptolizina O)": "<200 IU/mL",
+    "RF (Faktori Rheumatoid)": "<14 IU/mL",
+    "Waaler Rose": "—",
+    "Anti-CCP": "<20 U/mL",
+    "Anti ANA Detect": "—",
+    "Anti-dsDNA Screen (IgG)": "—",
+    "Le Qelizat": "—",
+    "Anti-U1-snRNP/Sm": "—",
+    "Anti-Sm": "—",
+    "Anti-Scl-70": "—",
+    "Anti-Centromere B": "—",
+    "ENA screen": "—",
+    "SS-A Antitrupat (Sjögren)": "—",
+    "SS-B Antitrupat (Sjögren)": "—",
+    "Anti-Jo-1": "—",
+    "AMA-M2": "—",
+    "Anti-LKM-1": "—",
+    "Anti-Gliadin IgG": "—",
+    "Anti-Gliadin IgA": "—",
+    "Anti-DGP IgG": "—",
+    "Anti-DGP IgA": "—",
+    "Anti-Tissue-Transglutaminase IgG": "—",
+    "Anti-Tissue-Transglutaminase IgA": "—",
+    "Anti-Endomysium Antibodies IgG": "—",
+    "Anti-Endomysium Antibodies IgA": "—",
+    "H-Pylori IgA": "—",
+    "H-Pylori IgG": "—",
+    "H-Pylori Ag Feces": "—",
+    "Foobt (gjaku Okult)": "—",
+    "Lactoferina Feces": "—",
+    "Calprotectin Feces": "<50 µg/g",
+    "Clostridium difficile Toxin A": "—",
+    "Clostridium difficile Toxin B": "—",
+    "Intoleranca ushqimore (60 ushqime)": "—",
+    "ASMA - Anti Smooth Muscle Antibody": "<1:40",
+    "Anti-MPO (pANCA)": "—",
+    "Anti-PR3 (cANCA)": "—",
+    "Anti-Phospholipid Screen IgG": "—",
+    "Anti-Phospholipid Screen IgM": "—",
+    "Anti-Cardiolipin IgG": "<20 GPL U",
+    "Anti-Cardiolipin IgM": "<20 MPL U",
+    "Anti-Cardiolipin IgA": "—",
+    "Anti-beta-2-Glycoprotein IgG": "—",
+    "Anti-beta-2-Glycoprotein IgM": "—",
+    "Anti-beta-2-Glycoprotein IgA": "—",
+    "HBsAg": "—",
+    "Anti-HBs": "≥10 mIU/mL",
+    "HBeAg": "—",
+    "Anti-HBe": "—",
+    "Anti-HBc IgM": "—",
+    "Anti-HBc Total": "—",
+    "Anti-HCV": "—",
+    "HIV Combi Ag&Ab": "—",
+    "Anti HAV Total": "—",
+    "Anti HAV IgM": "—",
+    "Toxoplasma IgG": "—",
+    "Toxoplasma IgM": "—",
+    "Rubeola IgG": "—",
+    "Rubeola IgM": "—",
+    "HbA1c": "<5.7 %",
+    "Insulina": "2–25 µIU/mL",
+    "C-Peptidi": "0.8–3.9 ng/mL",
+    "ACTH": "7–63 pg/mL",
+    "Cortizol": "5–25 µg/dL",
+    "Aldosteron": "—",
+    "Total T3": "80–200 ng/dL",
+    "Total T4": "5–12 µg/dL",
+    "Free T3": "2.0–4.4 pg/mL",
+    "Free T4": "0.8–1.8 ng/dL",
+    "TSH": "0.4–4.0 mIU/L",
+    "A-TPO": "<35 IU/mL",
+    "A-TG": "<115 IU/mL",
+    "TG": "—",
+    "FSH": "—",
+    "LH": "—",
+    "PROLAKTINA": "—",
+    "ESTRADIOLI": "—",
+    "PROGESTERON": "—",
+    "AMH": "—",
+    "TESTOSTERON": "—",
+    "FREE TESTOSTERON": "—",
+    "CALCITONIN": "—",
+    "DHEAS": "—",
+    "SHBG": "—",
+    "17-OH-PROG": "—",
+    "ANDROSTENDIONI": "—",
+    "IgE-total serum": "<150 kU/L",
+    "IgE-Specifike Inhalatore": "<0.35 kU/L",
+    "IgE specifike ushqimore": "<0.35 kU/L"
+};
+
+function merrVlerenReferente(emri) {
+    const emriPaster = String(emri || '').trim();
+    if (vleratReferente[emriPaster]) return vleratReferente[emriPaster];
+    const paTheks = emriPaster.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const celesi = Object.keys(vleratReferente).find(k => k.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() === paTheks);
+    if (celesi) return vleratReferente[celesi];
+    return 'Referencë sipas metodës/kit-it dhe intervalit të validuar të laboratorit';
+}
+
+/*function gjeneroDhePrinto() {
+    // 1. Merr të dhënat bazë
+    const emri = document.getElementById('p-emri-input')?.value || "Pacient";
+    const data = new Date().toLocaleDateString('sq-AL');
+    const ora = new Date().toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' });
+
+    // 2. Mbushe shabllonin e fshehur me këto të dhëna
+    document.getElementById('p-emri').innerText = emri;
+    document.getElementById('p-data').innerText = data;
+    document.getElementById('p-ora').innerText = ora;
+
+    // 3. Krijo tabelën me rezultatet që shkrove ti
+    let tabelaHTML = `
+        <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background: #f1f5f9; border-bottom: 2px solid #000;">
+                    <th style="padding:10px; text-align:left;">ANALIZA</th>
+                    <th style="padding:10px; text-align:center;">REZULTATI</th>
+                    <th style="padding:10px; text-align:right;">VLERAT REFERENTE</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    // Merr të gjitha inputet ku shkrove rezultatet
+    const inputet = document.querySelectorAll('.input-rezultati');
+    inputet.forEach(input => {
+        const emriAnalizes = input.getAttribute('data-analiza');
+        const vlera = input.value || "---"; // Nëse e harron pa shkruar
+        const ref = merrVlerenReferente(emriAnalizes);
+
+        tabelaHTML += `
+            <tr style="border-bottom: 1px solid #e2e8f0; height: 40px;">
+                <td style="padding:10px;">${emriAnalizes}</td>
+                <td style="padding:10px; text-align:center;"><strong>${vlera}</strong></td>
+                <td style="padding:10px; text-align:right; font-style:italic; font-size:13px;">${ref}</td>
+            </tr>`;
+    });
+
+    tabelaHTML += `</tbody></table>`;
+    document.getElementById('p-tabela-content').innerHTML = tabelaHTML;
+
+    // 4. Procesi i printimit
+    const printContent = document.getElementById('raporti-print').innerHTML;
+    const dritarjaRe = window.open('', '', 'height=800,width=1000');
+    
+    dritarjaRe.document.write('<html><head><title>Raporti i Analizave - CLINICIQ</title>');
+    dritarjaRe.document.write('<style>body{font-family:sans-serif; padding:50px;} table{margin-top:20px;}</style>');
+    dritarjaRe.document.write('</head><body>');
+    dritarjaRe.document.write(printContent);
+    dritarjaRe.document.write('</body></html>');
+    
+    dritarjaRe.document.close();
+    dritarjaRe.print();
+}*/
+
+function gjeneroDhePrinto() {
+    // 1. Merr të dhënat bazë nga dritarja blu (Besniku/Nehari)
+    const emri = document.getElementById('p-emri-input')?.value || "Pacient";
+    const data = new Date().toLocaleDateString('sq-AL');
+    const ora = new Date().toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' });
+
+    // 2. Mbushe shabllonin e fshehur në HTML
+    const emriElement = document.getElementById('p-emri');
+    const dataElement = document.getElementById('p-data');
+    const oraElement = document.getElementById('p-ora');
+    
+    if (emriElement) emriElement.innerText = emri;
+    if (dataElement) dataElement.innerText = data;
+    if (oraElement) oraElement.innerText = ora;
+
+    // 3. Krijo tabelën profesionale me vlerat referente
+    let tabelaHTML = `
+        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1e40af; padding-bottom: 10px;">
+            <h1 style="margin: 0; color: #1e40af; font-size: 28px;">CLINICIQ</h1>
+            <p style="margin: 5px 0; font-weight: bold; text-transform: uppercase;">Laboratori Biokimik-Hematologjik</p>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <span><strong>Pacienti:</strong> ${emri}</span>
+            <span><strong>Data:</strong> ${data} | ${ora}</span>
+        </div>
+        <table style="width:100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f5f9; border-bottom: 2px solid #000;">
+                    <th style="padding:10px; text-align:left;">ANALIZA</th>
+                    <th style="padding:10px; text-align:center;">REZULTATI</th>
+                    <th style="padding:10px; text-align:right;">VLERAT REFERENTE</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    // Merr inputet e rezultateve që plotësoi laboranti
+    const inputet = document.querySelectorAll('.input-rezultati');
+    inputet.forEach(input => {
+        const emriAnalizes = input.getAttribute('data-analiza');
+        const vlera = input.value || "---";
+        const ref = merrVlerenReferente(emriAnalizes);
+
+        tabelaHTML += `
+            <tr style="border-bottom: 1px solid #e2e8f0; height: 35px;">
+                <td style="padding:8px;">${emriAnalizes}</td>
+                <td style="padding:8px; text-align:center;"><strong>${vlera}</strong></td>
+                <td style="padding:8px; text-align:right; font-size:12px; color: #444;">${ref}</td>
+            </tr>`;
+    });
+
+    tabelaHTML += `</tbody></table>
+        <div style="margin-top: 50px; display: flex; justify-content:建设者; text-align: right;">
+            <p style="border-top: 1px solid #000; width: 200px; display: inline-block;">Nënshkrimi i Laborantit</p>
+        </div>`;
+
+    // 4. Procesi i printimit duke përdorur ID-në raporti-print që ke në CSS
+    const dritarjaRe = window.open('', '', 'height=800,width=1000');
+    
+    dritarjaRe.document.write('<html><head><title>Raporti - CLINICIQ</title>');
+    // Këtu shtojmë CSS-në që dërgove ti për t'u siguruar që printeri e njeh raportin
+    dritarjaRe.document.write(`
+        <style>
+            body { font-family: sans-serif; padding: 40px; }
+            #raporti-print { visibility: visible !important; position: absolute; left: 0; top: 0; width: 100%; }
+            @media print { .no-print { display: none; } }
+        </style>
+    `);
+    dritarjaRe.document.write('</head><body>');
+    dritarjaRe.document.write('<div id="raporti-print">'); 
+    dritarjaRe.document.write(tabelaHTML);
+    dritarjaRe.document.write('</div></body></html>');
+    
+    dritarjaRe.document.close();
+    
+    // I japim pak kohë dritares të ngarkojë stilin para se të hapet dritarja e printerit
+    setTimeout(() => {
+        dritarjaRe.print();
+    }, 500);
+}
+
+/*async function saveV() {
+    try {
+        // Kontrollojmë nëse këto ekzistojnë para se të marrim vlerat
+        const inputEmri = document.getElementById('vp') || document.getElementById('vP');
+        const inputCmimi = document.getElementById('input-cmimi-final');
+
+        if (!inputEmri || !inputCmimi) {
+            alert("GABIM: Nuk po gjej ID-në 'vp' ose 'input-cmimi-final' në HTML!");
+            return;
+        }
+
+        const emriInput = inputEmri.value.trim();
+        const cmimiFinal = parseFloat(inputCmimi.value) || 0;
+
+        if(!emriInput) return alert("Ju lutem shkruani emrin!");
+
+        let analizatEzgjedhura = [];
+        document.querySelectorAll('.ana-checkbox:checked').forEach(cb => {
+            analizatEzgjedhura.push(cb.getAttribute('data-name'));
+        });
+
+        // --- FILLIMI I KODIT TË RI (Vendose te rreshti 818) ---
+
+let cmimiTotalLlogaritu = 0;
+const selectSherbimi = document.getElementById('sherbimi');
+
+// 1. Merr çmimin e shërbimit bazë (Standart ose Specialist)
+if (selectSherbimi && selectSherbimi.selectedOptions.length > 0) {
+    cmimiFinal = parseFloat(selectSherbimi.selectedOptions[0].getAttribute('data-price')) || 0;
+}
+
+// 2. Shto çmimin për çdo analizë që është bërë 'check'
+document.querySelectorAll('.ana-checkbox:checked').forEach(cb => {
+    cmimiFinal += parseFloat(cb.getAttribute('data-price')) || 0;
+});
+
+// --- FUNDI I KODIT TË RI ---
+
+        const data = {
+            emri: emriInput,
+            historia: [{
+                sherbimi: analizatEzgjedhura.length > 0 ? analizatEzgjedhura.join(", ") : "Vizitë",
+                diagnoza: document.getElementById('vd')?.value || "",
+                cmimi_total: cmimiFinalTotal,
+                pagesa_e_bere: 0
+            }]
+        };
+
+        const res = await fetch('/api/patients', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            await loadHistoriku();
+            setTimeout(() => {
+                mshelModalin();
+            }, 1000);
+        } else {
+            alert("Vizita u ruajt me sukses.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("GABIMI SAKTË: " + err.message); // Kjo do të na tregojë pse po dështon
+    }
+}*/
+
+async function saveV() {
+    try {
+        const emri = document.getElementById('vEmri')?.value.trim() || '';
+        const mbiemri = document.getElementById('vMbiemri')?.value.trim() || '';
+        const telefoni = document.getElementById('vTel')?.value.trim() || '';
+        const qyteti = document.getElementById('vQyteti')?.value.trim() || '';
+        const gjinia = document.getElementById('vGjinia')?.value || '';
+        if (!emri || !mbiemri || !telefoni || !qyteti || !gjinia) return alert('Ju lutem plotësoni emrin, mbiemrin, telefonin, qytetin dhe gjininë.');
+        const selected = [...document.querySelectorAll('.ana-checkbox:checked')];
+        if (!selected.length) return alert('Ju lutem zgjidhni të paktën një analizë.');
+        const cmimiBaze = selected.reduce((sum, cb) => sum + (parseFloat(cb.value) || 0), 0);
+        const zbritja = Math.min(cmimiBaze, Math.max(0, parseFloat(document.getElementById('vZbritja')?.value) || 0));
+        const total = Math.max(0, cmimiBaze - zbritja);
+        const paguar = Math.min(total, Math.max(0, parseFloat(document.getElementById('vPagesaBere')?.value) || 0));
+        const now = new Date();
+        const data = {
+            emri: `${emri} ${mbiemri}`, emri_pacientit: emri, mbiemri, telefoni, qyteti, gjinia,
+            historia: [{
+                data: now.toISOString(), sherbimi: 'Analiza Laboratorike',
+                analizat: selected.map(cb => cb.getAttribute('data-name')).join(', '),
+                analizat_lista: selected.map(cb => cb.getAttribute('data-name')),
+                cmimi_bruto: Number(cmimiBaze.toFixed(2)), zbritja: Number(zbritja.toFixed(2)),
+                cmimi_total: Number(total.toFixed(2)), pagesa_e_bere: Number(paguar.toFixed(2)),
+                menyra_pageses: document.getElementById('vPagesaLloji')?.value || 'Cash',
+                statusi_pageses: paguar >= total ? 'Paguar' : (paguar > 0 ? 'Pjesërisht paguar' : 'Pa paguar'),
+                rezultatet: []
+            }]
+        };
+        const res = await fetch('/api/patients', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+        if (!res.ok) throw new Error('Serveri nuk e ruajti vizitën.');
+        await res.json();
+        alert('Pacienti u regjistrua me sukses.');
+        await showSec('regjistri');
+    } catch (err) { console.error('Gabim gjatë ruajtjes:', err); alert('Nuk u ruajt vizita: ' + err.message); }
+}
+
+function hapDritarenRezultateve(emri, analizatLista) {
+    // Kthejmë stringun e analizave (psh "Acidi Urik, TSH") në një listë (Array)
+    let analizatArray = analizatLista.split(',').map(a => a.trim());
+    
+    let tabelaHTML = `
+        <div style="text-align:center; margin-bottom:20px;">
+            <h2 style="color:white; margin:0;">${emri}</h2>
+            <p style="color:#3b82f6; margin:0;">PLOTËSO REZULTATET</p>
+        </div>
+        <table style="width:100%; color:white; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 1px solid #3b82f6;">
+                    <th style="text-align:left; padding:10px;">Analiza</th>
+                    <th style="text-align:center; padding:10px;">Rezultati</th>
+                    <th style="text-align:right; padding:10px;">Referenca</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    analizatArray.forEach(ana => {
+        let ref = merrVlerenReferente(ana);
+        tabelaHTML += `
+            <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding:10px;">${ana}</td>
+                <td style="padding:10px; text-align:center;">
+                    <input type="text" class="input-rezultati" data-ana="${ana}" 
+                           style="background:#1e293b; color:white; border:1px solid #3b82f6; width:70px; text-align:center;">
+                </td>
+                <td style="padding:10px; text-align:right; font-size:12px; color:#94a3b8;">${ref}</td>
+            </tr>`;
+    });
+
+    tabelaHTML += `</tbody></table>
+        <button onclick="gjeneroDhePrinto('${emri}')" 
+                style="margin-top:20px; width:100%; background:#2563eb; color:white; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">
+            🖨️ PRINTO RAPORTIN FINAL
+        </button>`;
+
+    // Këtu vendoset kodi brenda dritares blu që sheh në foto
+    document.querySelector('.modal-body-klasë').innerHTML = tabelaHTML; 
+}
+
+// Ruajtja në Database
+
+
+
+
+
+function shfaqModalinRezultateve() {
+const vendi = document.getElementById('analizat-input-fields');
+vendi.innerHTML = tempPatientPrint.analizat.map(a => `
+<div class="flex flex-col gap-1">
+<label class="text-[10px] font-black uppercase opacity-50 ml-1 italic">${a}</label>
+<input type="text" class="r-val" data-analiza="${a}" placeholder="Rezultati...">
+</div>`).join('');
+document.getElementById('result-modal').classList.remove('hidden');
+}
+
+/*function gjeneroRaportin() {
+document.getElementById('p-emri').innerText = tempPatientPrint.emri;
+document.getElementById('p-sherbimi').innerText = tempPatientPrint.sherbimi;
+document.getElementById('p-data').innerText = new Date().toLocaleDateString('sq-AL');
+document.getElementById('p-id').innerText = Math.floor(100000 + Math.random() * 900000);
+
+const inputs = document.querySelectorAll('.r-val');
+let html = "";
+inputs.forEach(input => {
+html += `<tr><td class="p-3 border text-sm font-bold uppercase">${input.getAttribute('data-analiza')}</td>
+<td class="p-3 border text-sm font-black text-blue-600">${input.value || '/'}</td>
+<td class="p-3 border text-xs text-slate-400 font-bold italic">Normal</td></tr>`;
+});
+document.getElementById('p-tabela').innerHTML = html;
+
+const printDiv = document.getElementById('print-section');
+printDiv.style.display = 'block';
+
+setTimeout(() => {
+window.print();
+printDiv.style.display = 'none';
+mshelModalin();
+showSec('vizitat');
+}, 500);
+}*/
+
+async function gjeneroRaportin() {
+    const printWindow = window.open('', '_blank', 'width=1000,height=800');
+    if (!printWindow) return alert('Lejoni hapjen e dritares së printimit në shfletues.');
+    printWindow.document.write('<p style="font-family:Arial;padding:30px">Duke përgatitur raportin...</p>');
+    const ok = await ruajRezultatet();
+    if (ok) await printoRaportLaboratorik(printWindow); else printWindow.close();
+}
+function mshelModalin() { document.getElementById('result-modal').classList.add('hidden'); tempPatientPrint = null; activeResultContext = null; }
+
+/*async function loadData(q = "") {
+const res = await fetch('/api/patients/search?q=' + q);
+const pts = await res.json();
+const list = document.getElementById('data-list');
+if(!list) return;
+list.innerHTML = pts.map((p, index) => `
+<div onclick="shikoKartelen('${p._id}')" class="flex-1 cursor-pointer"
+class="card-pro p-6 rounded-[2rem] flex justify-between items-center group cursor-pointer hover:bg-slate-800/40 transition-all border border-transparent hover:border-blue-500/20">
+
+<div class="flex items-center gap-6">
+<div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-2xl italic text-white uppercase">
+${p.emri[0]}
+</div>
+<div>
+<p class="font-black text-2xl italic tracking-tighter uppercase text-white">${p.emri}</p>
+<p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">
+${p._vizitaPerDate?.sherbimi || p.historia[p.historia.length - 1]?.sherbimi || 'Pa shërbim'}
+</p>
+</div>
+</div>
+
+<div class="flex items-center gap-8">
+<div>
+<p class="font-black text-3xl italic tracking-tighter text-white">
+${p._vizitaPerDate?.cmimi_total ?? p.historia[p.historia.length - 1]?.cmimi_total ?? 0}€
+</p>
+</div>
+<button onclick="event.stopPropagation(); fshij('${p._id}')"
+class="p-4 text-red-500/40 hover:text-red-500 transition-all relative z-50">
+<i data-lucide="trash-2"></i>
+</button>
+</div>
+</div>`).join('');
+
+lucide.createIcons();
+}*/
+async function fshij(id) {
+if(confirm("A jeni të sigurt që dëshironi ta fshini këtë pacient?")) {
+try {
+const res = await fetch('/api/patients/' + id, { method: 'DELETE' });
+if(res.ok) {
+// Rifreskon listën menjëherë
+await loadData();
+} else {
+alert("Serveri nuk mundi ta fshinte pacientin.");
+}
+} catch (err) {
+console.error("Gabim gjatë fshirjes:", err);
+alert("Ndodhi një gabim teknik gjatë fshirjes.");
+}
+}
+}
+
+async function loadData(q = "") {
+    const res = await fetch('/api/patients/search?q=' + encodeURIComponent(q));
+    pts = await res.json();
+    const list = document.getElementById('data-list');
+    if(!list) return;
+
+    // Filtri i datës aktivizohet vetëm te Regjistri; seksionet e tjera mbeten siç ishin.
+    const fushaDates = document.getElementById('filtri-data-pacienteve') || document.getElementById('filtri-data-vizitat');
+    const dataZgjedhur = fushaDates ? fushaDates.value : '';
+    const pacientePerShfaqje = pts.map(p => {
+        const historia = Array.isArray(p.historia) ? p.historia : [];
+        const vizitaData = dataZgjedhur ? historia.filter(h => {
+            const rawDate = h.data || p.krijuar_me || '';
+            let dataVizites = '';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(String(rawDate))) dataVizites = String(rawDate);
+            else if (rawDate) { const d = new Date(rawDate); if (!Number.isNaN(d.getTime())) dataVizites = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+            return dataVizites === dataZgjedhur;
+        }) : historia;
+        if (!vizitaData.length) return null;
+        return { ...p, _vizitaPerDate: vizitaData[vizitaData.length - 1] };
+    }).filter(Boolean);
+
+    if (!pacientePerShfaqje.length) {
+        list.innerHTML = '<div class="card-pro p-8 rounded-2xl text-center text-slate-400">Nuk ka pacientë të regjistruar për këtë datë.</div>';
+        return;
+    }
+
+    list.innerHTML = pacientePerShfaqje.map((p, index) => `
+        <div onclick="shikoKartelen('${p._id}')" 
+             class="card-pro p-6 rounded-[2rem] flex justify-between items-center group cursor-pointer hover:bg-slate-800/40 transition-all border border-transparent hover:border-blue-500/20">
+
+            <div class="flex items-center gap-6">
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-2xl italic text-white uppercase">
+                    ${p.emri[0]}
+                </div>
+                <div>
+                    <p class="font-black text-2xl italic tracking-tighter uppercase text-white">${p.emri}</p>
+                    <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">
+                        ${p._vizitaPerDate?.sherbimi || p.historia[p.historia.length - 1]?.sherbimi || 'Pa shërbim'}
+                    </p>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                        ${p.telefoni || 'Pa telefon'} · ${p.qyteti || 'Pa qytet'} · ${p.gjinia || 'Pa gjini'}
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-8">
+                <div>
+                    <p class="font-black text-3xl italic tracking-tighter text-white">
+                        ${p._vizitaPerDate?.cmimi_total ?? p.historia[p.historia.length - 1]?.cmimi_total ?? 0}€
+                    </p>
+                </div>
+
+                <button onclick="event.stopPropagation(); printoKartelenProfesionale(pts.findIndex(item => item._id === '${p._id}'))" 
+                        class="p-4 text-blue-500/40 hover:text-blue-500 transition-all relative z-[100] pointer-events-auto">
+                    <i data-lucide="printer"></i>
+                </button>
+
+                <button onclick="event.stopPropagation(); fshij('${p._id}')"
+                        class="p-4 text-red-500/40 hover:text-red-500 transition-all relative z-50">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+        </div>`).join('');
+
+    lucide.createIcons();
+}
+
+// SHTO EDHE KËTË PËR KARTELËN (Nëse nuk e ke shtuar ende):
+async function shikoKartelen(id) {
+try {
+const res = await fetch('/api/patients', { cache: 'no-store' });
+if (!res.ok) throw new Error('Nuk u lexuan kartelat e pacientëve.');
+const pts = await res.json();
+const p = pts.find(item => item._id === id);
+if(!p) return alert('Pacienti nuk u gjet.');
+
+const historia = Array.isArray(p.historia) ? p.historia : [];
+const totalVizita = historia.length;
+const totalFaturuar = historia.reduce((sum, h) => sum + (Number(h.cmimi_total) || 0), 0);
+const totalPaguar = historia.reduce((sum, h) => sum + (Number(h.pagesa_e_bere) || 0), 0);
+const borxhi = Math.max(0, totalFaturuar - totalPaguar);
+const safe = value => typeof escapeHtml === 'function' ? escapeHtml(String(value ?? '')) : String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
+const modalHtml = `
+<div id="kartela-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[200] p-4">
+<div class="card-pro w-full max-w-4xl p-6 md:p-10 rounded-[2rem] relative bg-[#0b1121] border border-white/10 shadow-2xl max-h-[94vh] overflow-y-auto">
+<button onclick="document.getElementById('kartela-modal').remove()" class="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors" aria-label="Mbyll kartelën">
+<i data-lucide="x-circle" class="w-8 h-8"></i>
+</button>
+<div class="flex items-center gap-5 mb-6 border-b border-white/5 pb-6 pr-10">
+<div class="w-16 h-16 md:w-20 md:h-20 bg-blue-600 rounded-[1.5rem] flex items-center justify-center text-3xl md:text-4xl font-black italic text-white uppercase shadow-xl shadow-blue-600/30">
+${safe((p.emri || 'P').slice(0,1))}
+</div>
+<div class="min-w-0">
+<h2 class="text-2xl md:text-4xl font-black italic uppercase tracking-tighter text-white break-words">${safe(p.emri || 'Pacient pa emër')}</h2>
+<p class="text-blue-500 font-bold text-xs uppercase tracking-widest italic">Historiku i pacientit</p>
+<p class="text-slate-400 text-xs font-bold tracking-wide mt-2">${safe(p.telefoni || 'Pa telefon')} · ${safe(p.qyteti || 'Pa qytet')} · ${safe(p.gjinia || 'Pa gjini')}</p>
+<p class="text-slate-500 text-xs mt-1">Nr. personal: ${safe(p.numri_personal || 'Nuk është shënuar')}</p><p class="text-slate-500 text-xs mt-1">ID e kartelës: ${safe(p._id || 'Nuk është shënuar')}</p>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+<div class="p-4 rounded-2xl bg-blue-600/10 border border-blue-500/20"><p class="text-[10px] uppercase font-black text-slate-400">Vizita gjithsej</p><p class="text-2xl font-black text-white mt-1">${totalVizita}</p></div>
+<div class="p-4 rounded-2xl bg-slate-900 border border-white/5"><p class="text-[10px] uppercase font-black text-slate-400">Totali</p><p class="text-2xl font-black text-white mt-1">${totalFaturuar.toFixed(2)}€</p></div>
+<div class="p-4 rounded-2xl bg-green-500/10 border border-green-500/20"><p class="text-[10px] uppercase font-black text-slate-400">Paguar</p><p class="text-2xl font-black text-green-400 mt-1">${totalPaguar.toFixed(2)}€</p></div>
+<div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/20"><p class="text-[10px] uppercase font-black text-slate-400">Borxhi</p><p class="text-2xl font-black text-red-400 mt-1">${borxhi.toFixed(2)}€</p></div>
+</div>
+<div class="flex items-center justify-between gap-3 mb-4"><h3 class="text-lg font-black uppercase italic text-white">Vizitat e mëparshme</h3><span class="text-xs text-slate-500">Nga më e reja</span></div>
+<div class="space-y-4 max-h-[52vh] overflow-y-auto pr-2 custom-scroll">
+${historia.length ? historia.slice().reverse().map(h => `
+<div class="p-5 md:p-6 bg-slate-900/40 rounded-[1.5rem] border border-white/5">
+<div class="flex flex-wrap justify-between items-start gap-3 mb-4">
+<div><b class="text-lg md:text-xl text-blue-400 italic uppercase tracking-tighter">${safe(h.sherbimi || 'Vizitë laboratorike')}</b><p class="text-xs text-slate-400 mt-1">${safe(new Date(h.data || p.krijuar_me || Date.now()).toLocaleString('sq-AL'))}</p></div>
+<b class="text-2xl font-black italic text-white">${(Number(h.cmimi_total) || 0).toFixed(2)}€</b>
+</div>
+<div class="bg-black/30 p-4 rounded-2xl border border-white/5">
+<p class="text-xs text-slate-300"><span class="text-[9px] uppercase font-black text-slate-500 block mb-1">Analizat</span>${safe(h.analizat || (Array.isArray(h.analizat_lista) ? h.analizat_lista.join(', ') : '') || '/')}</p>
+${h.diagnoza ? `<p class="text-xs text-slate-300 mt-3"><span class="text-[9px] uppercase font-black text-slate-500 block mb-1">Shënim / diagnozë</span>${safe(h.diagnoza)}</p>` : ''}
+<div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2"><div class="rounded-xl bg-white/5 p-3"><span class="text-[9px] uppercase font-black text-slate-500 block mb-1">Totali i vizitës</span><b class="text-white">${(Number(h.cmimi_total) || 0).toFixed(2)}€</b></div><div class="rounded-xl bg-green-500/10 p-3"><span class="text-[9px] uppercase font-black text-slate-500 block mb-1">Paguar</span><b class="text-green-300">${(Number(h.pagesa_e_bere) || 0).toFixed(2)}€</b></div><div class="rounded-xl bg-red-500/10 p-3"><span class="text-[9px] uppercase font-black text-slate-500 block mb-1">Borxhi i vizitës</span><b class="text-red-300">${Math.max(0, (Number(h.cmimi_total) || 0) - (Number(h.pagesa_e_bere) || 0)).toFixed(2)}€</b></div></div><p class="text-xs text-slate-400 mt-2"><span class="text-[9px] uppercase font-black text-slate-500">Mënyra e pagesës:</span> ${safe(h.menyra_pageses || 'Cash')} · ${safe(h.statusi_pageses || ((Number(h.pagesa_e_bere || 0) >= Number(h.cmimi_total || 0)) ? 'Paguar' : 'Pa paguar'))}</p>
+${Array.isArray(h.rezultatet) && h.rezultatet.length ? `<div class="mt-4"><p class="text-[9px] uppercase font-black text-slate-500 mb-2">Rezultatet e ruajtura</p><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead><tr class="text-slate-500 border-b border-white/10"><th class="py-2 pr-3">Analiza</th><th class="py-2 pr-3">Rezultati</th><th class="py-2 pr-3">Njësia</th><th class="py-2 pr-3">Referenca</th><th class="py-2">Statusi</th></tr></thead><tbody>${h.rezultatet.map(r => `<tr class="border-b border-white/5 text-slate-300"><td class="py-2 pr-3">${safe(r.analiza)}</td><td class="py-2 pr-3 font-bold text-white">${safe(r.rezultati || '—')}</td><td class="py-2 pr-3">${safe(r.njesia || '—')}</td><td class="py-2 pr-3">${safe(r.referenca || '—')}</td><td class="py-2"><span class="inline-flex px-2 py-1 rounded-md text-[10px] font-bold ${r.statusi === 'I verifikuar' ? 'bg-green-500/15 text-green-300' : r.statusi === 'Rezultati i plotësuar' ? 'bg-blue-500/15 text-blue-300' : r.statusi === 'Në proces' ? 'bg-amber-500/15 text-amber-300' : 'bg-slate-700 text-slate-300'}">${safe(r.statusi || (r.rezultati ? 'Rezultati i plotësuar' : 'Në pritje'))}</span></td></tr>`).join('')}</tbody></table></div></div>` : '<p class="text-xs text-slate-500 mt-3 italic">Nuk ka rezultate të ruajtura për këtë vizitë.</p>'}
+<div class="flex flex-wrap gap-2 mt-4"><button onclick="event.stopPropagation(); hapRezultatet('${safe(p._id)}','${safe(h._id)}')" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase">Rezultatet / Printo</button><button onclick="event.stopPropagation(); hapRezultatet('${safe(p._id)}','${safe(h._id)}')" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-black uppercase">Plotëso / Ndrysho</button><button onclick="event.stopPropagation(); hapEditAnalizat('${safe(p._id)}','${safe(h._id)}')" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-black uppercase">Edito / Shto analizë</button></div>
+</div>
+</div>`).join('') : '<div class="p-8 text-center text-slate-400">Nuk ka vizita të regjistruara për këtë pacient.</div>'}
+</div>
+<div class="flex justify-end mt-6"><button onclick="document.getElementById('kartela-modal').remove()" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-black uppercase">Mbyll kartelën</button></div>
+</div>
+</div>`;
+document.body.insertAdjacentHTML('beforeend', modalHtml);
+lucide.createIcons();
+} catch (err) {
+console.error('Gabim gjatë hapjes së kartelës:', err);
+alert('Nuk u hap kartela e pacientit. Kontrolloni lidhjen me databazën dhe provoni përsëri.');
+}
+}
+
+async function hapEditAnalizat(patientId, visitId) {
+    const oldModal = document.getElementById('edit-analizat-modal');
+    if (oldModal) oldModal.remove();
+    const response = await fetch('/api/patients', { cache: 'no-store' });
+    if (!response.ok) return alert('Nuk u lexuan kartelat e pacientëve.');
+    const patients = await response.json();
+    const patient = patients.find(p => p._id === patientId);
+    const visit = patient?.historia?.find(v => v._id === visitId);
+    if (!patient || !visit) return alert('Pacienti ose vizita nuk u gjet.');
+    const safe = value => typeof escapeHtml === 'function' ? escapeHtml(String(value ?? '')) : String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const current = Array.isArray(visit.analizat_lista) && visit.analizat_lista.length
+        ? visit.analizat_lista : String(visit.analizat || '').split(',').map(a => a.trim()).filter(Boolean);
+    const catalog = Array.isArray(ANALIZAT_DATA) ? ANALIZAT_DATA : [];
+    const available = catalog.filter(a => !current.some(name => name.toLocaleLowerCase() === String(a.emri).toLocaleLowerCase()));
+    const modal = `
+    <div id="edit-analizat-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[220] p-4">
+      <div class="w-full max-w-2xl rounded-3xl bg-[#0b1121] border border-white/10 p-6 md:p-8 max-h-[92vh] overflow-y-auto">
+        <div class="flex items-center justify-between gap-3 mb-2"><h3 class="text-xl font-black uppercase italic text-white">Shto analizë në vizitë</h3><button onclick="document.getElementById('edit-analizat-modal').remove()" class="text-slate-400 hover:text-white text-2xl">×</button></div>
+        <p class="text-sm text-slate-400 mb-4">${safe(patient.emri)} · Totali aktual: <b class="text-white">${(Number(visit.cmimi_total)||0).toFixed(2)}€</b></p>
+        <input id="edit-analiza-kerko" oninput="filtroEditAnalizat()" class="w-full rounded-xl bg-slate-900 border border-white/10 p-3 text-white outline-none mb-3" placeholder="Kërko analizën...">
+        <div id="edit-analiza-lista" class="space-y-2 max-h-[42vh] overflow-y-auto pr-1">${available.map((a,i)=>`<label data-name="${safe(a.emri).toLocaleLowerCase()}" class="flex items-center justify-between gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3 cursor-pointer"><span class="flex items-center gap-3 min-w-0"><input type="checkbox" class="edit-ana-checkbox shrink-0" data-name="${safe(a.emri)}" data-price="${Number(a.cmimi)||0}" onchange="llogaritEditAnalizat()"><span class="text-sm text-slate-200">${safe(a.emri)}</span></span><b class="text-sm text-blue-400 whitespace-nowrap">${(Number(a.cmimi)||0).toFixed(2)}€</b></label>`).join('') || '<p class="text-slate-400 text-sm">Nuk ka analiza të tjera në listë.</p>'}</div>
+        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 mt-4 pt-4"><div class="text-sm text-slate-300">Shtesë: <b id="edit-analiza-shuma" class="text-blue-400">0.00€</b><br>Totali i ri: <b id="edit-analiza-totali" class="text-white">${(Number(visit.cmimi_total)||0).toFixed(2)}€</b></div><div class="flex gap-2"><button onclick="document.getElementById('edit-analizat-modal').remove()" class="px-4 py-3 rounded-xl bg-slate-700 text-white text-xs font-black uppercase">Anulo</button><button onclick="ruajEditAnalizat('${safe(patientId)}','${safe(visitId)}')" class="px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase">Ruaj ndryshimet</button></div></div>
+      </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', modal);
+    window.editAnalizaCmimiAktual = Number(visit.cmimi_total) || 0;
+    lucide.createIcons();
+}
+
+function filtroEditAnalizat() {
+    const query = (document.getElementById('edit-analiza-kerko')?.value || '').toLocaleLowerCase();
+    document.querySelectorAll('#edit-analiza-lista label').forEach(label => {
+        label.style.display = (label.getAttribute('data-name') || '').includes(query) ? 'flex' : 'none';
+    });
+}
+
+function llogaritEditAnalizat() {
+    const extra = [...document.querySelectorAll('#edit-analiza-lista .edit-ana-checkbox:checked')].reduce((sum, cb) => sum + (Number(cb.dataset.price) || 0), 0);
+    const sum = document.getElementById('edit-analiza-shuma');
+    const total = document.getElementById('edit-analiza-totali');
+    if (sum) sum.textContent = extra.toFixed(2) + '€';
+    if (total) total.textContent = ((Number(window.editAnalizaCmimiAktual) || 0) + extra).toFixed(2) + '€';
+}
+
+async function ruajEditAnalizat(patientId, visitId) {
+    const selected = [...document.querySelectorAll('#edit-analiza-lista .edit-ana-checkbox:checked')].map(cb => ({ analiza: cb.dataset.name, cmimi: Number(cb.dataset.price) || 0 }));
+    if (!selected.length) return alert('Zgjidh së paku një analizë për ta shtuar.');
+    const button = document.querySelector('#edit-analizat-modal button[onclick^="ruajEditAnalizat"]');
+    if (button) { button.disabled = true; button.textContent = 'Duke ruajtur...'; }
+    try {
+        const response = await fetch(`/api/patients/${encodeURIComponent(patientId)}/visits/${encodeURIComponent(visitId)}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shto_analiza: selected })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'Ndryshimet nuk u ruajtën.');
+        document.getElementById('edit-analizat-modal')?.remove();
+        document.getElementById('kartela-modal')?.remove();
+        await shikoKartelen(patientId);
+        alert('Analiza u shtua dhe çmimi u përfshi në totalin e vizitës.');
+    } catch (error) {
+        alert(error.message || 'Ndodhi një gabim gjatë ruajtjes.');
+        if (button) { button.disabled = false; button.textContent = 'Ruaj ndryshimet'; }
+    }
+}
+
+showSec('vizitat');
+showSec('vizitat');
+
+function llogaritCmiminVizites() {
+    const selectedTotal = [...document.querySelectorAll('.ana-checkbox:checked')].reduce((sum, cb) => sum + (parseFloat(cb.value) || 0), 0);
+    const discountInput = document.getElementById('vZbritja');
+    const paidInput = document.getElementById('vPagesaBere');
+    const discount = Math.min(selectedTotal, Math.max(0, parseFloat(discountInput?.value) || 0));
+    const total = Math.max(0, selectedTotal - discount);
+    if (discountInput && Number(discountInput.value || 0) > selectedTotal) discountInput.value = selectedTotal.toFixed(2);
+    if (paidInput && Number(paidInput.value || 0) > total) paidInput.value = total.toFixed(2);
+    const paid = Math.min(total, Math.max(0, parseFloat(paidInput?.value) || 0));
+    const display = document.getElementById('shuma-vizual');
+    const hidden = document.getElementById('input-cmimi-final');
+    const debt = document.getElementById('vBorxhiVizual');
+    if (display) display.innerText = total.toFixed(2) + ' €';
+    if (hidden) hidden.value = total.toFixed(2);
+    if (debt) debt.innerText = Math.max(0, total - paid).toFixed(2) + ' €';
+}
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+async function hapRezultatet(patientId, visitId) {
+    try {
+        const response = await fetch('/api/patients');
+        if (!response.ok) throw new Error('Nuk u lexuan pacientët.');
+        const patients = await response.json();
+        const patient = patients.find(p => p._id === patientId);
+        const visit = patient?.historia?.find(h => h._id === visitId);
+        if (!patient || !visit) return alert('Vizita nuk u gjet. Rifreskoni listën dhe provoni përsëri.');
+        activeResultContext = { patientId, visitId, patient, visit };
+        tempPatientPrint = { emri: patient.emri, sherbimi: visit.sherbimi, analizat: Array.isArray(visit.analizat_lista) && visit.analizat_lista.length ? visit.analizat_lista : String(visit.analizat || '').split(',').map(a => a.trim()).filter(Boolean) };
+        document.getElementById('result-patient-subtitle').textContent = `${patient.emri} · Vizita: ${new Date(visit.data || patient.krijuar_me).toLocaleString('sq-AL')} · ID ${String(visit._id).slice(-6).toUpperCase()}`;
+        const saved = Array.isArray(visit.rezultatet) ? visit.rezultatet : [];
+        const host = document.getElementById('analizat-input-fields');
+        host.innerHTML = tempPatientPrint.analizat.map((name, index) => {
+            const old = saved.find(r => r.analiza === name) || {};
+            const ref = merrVlerenReferente(name) || old.referenca || '';
+            return `<div class="grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1fr] gap-3 items-center rounded-xl border border-white/10 bg-black/20 p-3">
+                <div><label class="block text-xs font-black uppercase text-slate-200">${escapeHtml(name)}</label><span class="text-[10px] text-slate-500">${ref ? 'Referenca: ' + escapeHtml(ref) : 'Vlera referente sipas laboratorit'}</span></div>
+                <div><label class="text-[10px] uppercase text-slate-500">Rezultati</label><input class="r-val" data-analiza="${escapeHtml(name)}" value="${escapeHtml(old.rezultati || '')}" placeholder="Shkruani rezultatin" /></div>
+                <div><label class="text-[10px] uppercase text-slate-500">Njësia (nëse duhet)</label><input class="r-njesia" data-analiza="${escapeHtml(name)}" value="${escapeHtml(old.njesia || '')}" placeholder="p.sh. mmol/L" /></div>
+                <div><label class="text-[10px] uppercase text-slate-500">Statusi i analizës</label><select class="r-status w-full" data-analiza="${escapeHtml(name)}"><option value="Në pritje" ${(old.statusi || (old.rezultati ? 'Rezultati i plotësuar' : 'Në pritje')) === 'Në pritje' ? 'selected' : ''}>Në pritje</option><option value="Në proces" ${old.statusi === 'Në proces' ? 'selected' : ''}>Në proces</option><option value="Rezultati i plotësuar" ${(old.statusi || (old.rezultati ? 'Rezultati i plotësuar' : 'Në pritje')) === 'Rezultati i plotësuar' ? 'selected' : ''}>Rezultati i plotësuar</option><option value="I verifikuar" ${old.statusi === 'I verifikuar' ? 'selected' : ''}>I verifikuar</option></select></div>
+            </div>`;
+        }).join('') || '<p class="text-slate-400">Nuk ka analiza të regjistruara në këtë vizitë.</p>';
+        document.getElementById('result-modal').classList.remove('hidden');
+    } catch (err) { console.error(err); alert('Gabim gjatë hapjes së rezultateve: ' + err.message); }
+}
+
+function mblidhRezultatet() {
+    if (!activeResultContext) throw new Error('Nuk është zgjedhur vizita.');
+    return [...document.querySelectorAll('.r-val')].map(input => {
+        const name = input.dataset.analiza;
+        const unit = document.querySelector(`.r-njesia[data-analiza="${CSS.escape(name)}"]`)?.value.trim() || '';
+        const old = (activeResultContext.visit.rezultatet || []).find(r => r.analiza === name) || {};
+        const statusInput = document.querySelector(`.r-status[data-analiza="${CSS.escape(name)}"]`);
+        const statusi = statusInput?.value || old.statusi || (input.value.trim() ? 'Rezultati i plotësuar' : 'Në pritje');
+        return { analiza: name, rezultati: input.value.trim(), njesia: unit, referenca: merrVlerenReferente(name) || old.referenca || '', statusi };
+    });
+}
+
+async function ruajRezultatet() {
+    try {
+        if (!activeResultContext) return alert('Nuk është zgjedhur vizita.');
+        const rezultatet = mblidhRezultatet();
+        const res = await fetch(`/api/patients/${encodeURIComponent(activeResultContext.patientId)}/visits/${encodeURIComponent(activeResultContext.visitId)}`, {
+            method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ rezultatet })
+        });
+        if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Rezultatet nuk u ruajtën.'); }
+        const updated = await res.json();
+        activeResultContext.patient = updated;
+        activeResultContext.visit = updated.historia.find(h => h._id === activeResultContext.visitId) || activeResultContext.visit;
+        alert('Rezultatet u ruajtën në kartelën e pacientit.');
+        return true;
+    } catch (err) { console.error(err); alert('Gabim gjatë ruajtjes së rezultateve: ' + err.message); return false; }
+}
+
+async function printoRaportLaboratorik(existingWindow = null) {
+    if (!activeResultContext) return;
+    const { patient, visit } = activeResultContext;
+    const resultRows = mblidhRezultatet();
+    const logoResponse = await fetch('/logo-fj.png');
+    const logoBlob = await logoResponse.blob();
+    const logoData = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(logoBlob); });
+    const date = new Date(visit.data || patient.krijuar_me || Date.now());
+    const rows = resultRows.map(r => `<tr><td>${escapeHtml(r.analiza)}</td><td class="result">${escapeHtml(r.rezultati || '—')}</td><td>${escapeHtml(r.njesia || '—')}</td><td>${escapeHtml(r.referenca || '—')}</td></tr>`).join('');
+    const win = existingWindow || window.open('', '_blank', 'width=1000,height=800');
+    if (!win) { alert('Lejoni hapjen e dritares së printimit në shfletues.'); return; }
+    win.document.write(`<!doctype html><html lang="sq"><head><meta charset="utf-8"><title>Raport laboratorik - ${escapeHtml(patient.emri)}</title><style>
+      @page{size:A4;margin:16mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#142f3a;margin:0;font-size:12px}.head{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #0e7180;padding-bottom:12px;margin-bottom:22px}.logo{width:170px;height:auto;max-height:125px;object-fit:contain}.brand{text-align:right}.brand h1{font-size:20px;margin:0;color:#123c52}.brand p{margin:4px 0;color:#0e7180;letter-spacing:2px;font-weight:bold}.meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}.meta div{padding:9px 11px;background:#f2f7f8;border-radius:5px}.meta b{display:inline-block;min-width:90px}.section{font-size:14px;font-weight:bold;margin:18px 0 8px;color:#123c52}table{width:100%;border-collapse:collapse;margin-top:8px}th{background:#e6f1f3;text-align:left;color:#123c52}th,td{padding:9px;border:1px solid #c8d8dc}td.result{font-weight:bold;font-size:13px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:75px}.sign{text-align:center;border-top:1px solid #536a70;padding-top:8px;min-height:38px}.promo-footer{margin-top:24px;padding:15px 18px;background:#e8f6fb;border-top:3px solid #9bdcf2;border-radius:5px;display:grid;grid-template-columns:0.9fr 1.4fr;gap:18px;color:#174b70;page-break-inside:avoid}.promo-contact{font-size:10px;line-height:1.8;overflow-wrap:anywhere}.promo-title{text-align:right;font-size:12px;font-weight:800;letter-spacing:.4px;color:#174b70;margin:0 0 9px}.promo-tagline{text-align:right;font-size:9px;color:#397b9f;margin:-5px 0 10px}.promo-devices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;text-align:center}.promo-device{font-size:9px;font-weight:700;line-height:1.35;padding:7px 4px;background:rgba(255,255,255,.72);border:1px solid #c5e8f4;border-radius:4px}.promo-device span{display:block;font-weight:400;font-style:italic;color:#397b9f;margin-top:3px}.foot{margin-top:12px;border-top:1px solid #c8d8dc;padding-top:8px;font-size:10px;color:#5c6e72;display:flex;justify-content:space-between}@media print{button{display:none}.promo-footer{break-inside:avoid}}
+      </style></head><body><header class="head"><img class="logo" src="${logoData}" alt="FJ Diagnostic Laboratory"><div class="brand"><h1>FJ DIAGNOSTIC LABORATORY</h1><p>RAPORT LABORATORIK</p><div>Saktësi · Besim · Shëndet</div></div></header>
+      <div class="meta"><div><b>Pacienti:</b> ${escapeHtml(patient.emri)}</div><div><b>ID e vizitës:</b> ${escapeHtml(String(visit._id || '').slice(-8).toUpperCase())}</div><div><b>Data e vizitës:</b> ${date.toLocaleDateString('sq-AL')}</div><div><b>Ora e vizitës:</b> ${date.toLocaleTimeString('sq-AL',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div><div><b>Telefoni:</b> ${escapeHtml(patient.telefoni || '—')}</div><div><b>Qyteti:</b> ${escapeHtml(patient.qyteti || '—')}</div></div>
+      <div class="section">REZULTATET E ANALIZAVE</div><table><thead><tr><th>Analiza</th><th>Rezultati</th><th>Njësia</th><th>Vlerat referente</th></tr></thead><tbody>${rows}</tbody></table>
+      <p style="margin-top:12px;font-size:9px;color:#5c6e72">Shënim: Vlerat referente janë orientuese dhe duhet të verifikohen kundrejt metodës, reagentit/analizatorit dhe intervaleve të validuara të laboratorit. Testet hormonale/imunologjike mund të kenë kufij specifikë për kit-in.</p>
+      <div class="signatures"><div class="sign">Vula dhe nënshkrimi i specialistës</div><div class="sign">Vula dhe nënshkrimi i laborantit</div></div>
+      <section class="promo-footer"><div class="promo-contact"><strong>KONTAKTONI FJ DIAGNOSTIC LABORATORY</strong><br>☎ 044 145 097<br>✉ fj.diagnosticlab@gmail.com<br>⌖ VILJEM VOKER, 21, Bellobrad, Dragash</div><div><p class="promo-title">APARATURA MODERNE LABORATORIKE</p><p class="promo-tagline">Teknologji e avancuar për analiza laboratorike</p><div class="promo-devices"><div class="promo-device">Pentra 400<span>Biokimi</span></div><div class="promo-device">MAGLUMI Snibe 800<span>Imunologji</span></div><div class="promo-device">Sysmex 5DF<span>Hematologji</span></div><div class="promo-device">Finecare<span>Imunologji</span></div></div></div></section>
+      <div class="foot"><span>FJ Diagnostic Laboratory</span><span>Raporti përmban rezultatet e ruajtura për vizitën e shënuar.</span></div><script>window.onload=()=>setTimeout(()=>window.print(),350);<\/script></body></html>`);
+    win.document.close();
+}
+
+function mbushAnalizat() {
+    const kontenieri = document.getElementById('kontenieri-analizave');
+    const shumaDisplay = document.getElementById('shuma-vizual');
+    const shumaInput = document.getElementById('input-cmimi-final');
+
+    if (!kontenieri) return;
+
+    kontenieri.innerHTML = '';
+
+    const groups = ANALIZAT_DATA.reduce((acc, ana) => {
+        const group = ana.kategoria || "Të tjera";
+        if (!acc[group]) acc[group] = [];
+        acc[group].push(ana);
+        return acc;
+    }, {});
+
+    Object.entries(groups).forEach(([group, items]) => {
+        const section = document.createElement('section');
+        section.className = "rounded-2xl border border-white/5 bg-slate-950/40 p-3";
+        section.innerHTML = `
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <h4 class="text-xs font-black uppercase tracking-widest text-blue-400">${group}</h4>
+                <span class="text-[10px] font-black text-slate-500">${items.length} analiza</span>
+            </div>
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-2">
+                ${items.map(ana => `
+                    <label class="flex items-center justify-between gap-3 p-2 hover:bg-white/5 rounded-lg cursor-pointer">
+                        <span class="flex items-center gap-3 min-w-0">
+                            <input type="checkbox" value="${parseFloat(ana.cmimi)}" data-name="${ana.emri}" class="ana-checkbox w-4 h-4 text-blue-500 shrink-0">
+                            <span class="text-[11px] text-gray-300 leading-tight">${ana.emri}</span>
+                        </span>
+                        <b class="text-blue-400 text-[11px] shrink-0">${Number(ana.cmimi).toFixed(2)}€</b>
+                    </label>
+                `).join('')}
+            </div>
+        `;
+        kontenieri.appendChild(section);
+    });
+
+    kontenieri.onchange = () => { llogaritCmiminVizites(); };
+}
+
+function kerkoAnalizat(kerkimi) {
+    const kontenieri = document.getElementById('kontenieri-analizave');
+    const statusi = document.getElementById('rezultati-kerkim-analiza');
+    if (!kontenieri) return;
+
+    const termi = String(kerkimi || '').trim().toLocaleLowerCase('sq-AL');
+    const analizat = [...kontenieri.querySelectorAll('input.ana-checkbox')];
+    let teDukshme = 0;
+
+    analizat.forEach(input => {
+        const emri = String(input.getAttribute('data-name') || '').toLocaleLowerCase('sq-AL');
+        const label = input.closest('label');
+        const perputhet = !termi || emri.includes(termi);
+        if (label) label.style.display = perputhet ? '' : 'none';
+        if (perputhet) teDukshme++;
+    });
+
+    kontenieri.querySelectorAll('section').forEach(section => {
+        const kaAnaliza = [...section.querySelectorAll('input.ana-checkbox')].some(input => {
+            const emri = String(input.getAttribute('data-name') || '').toLocaleLowerCase('sq-AL');
+            return !termi || emri.includes(termi);
+        });
+        section.style.display = kaAnaliza ? '' : 'none';
+    });
+
+    if (statusi) {
+        statusi.textContent = termi
+            ? `${teDukshme} analiza u gjetën`
+            : 'Shkruaj disa shkronja për të gjetur analizën';
+    }
+}
+
+async function ngarkoFinancatPerDate(data) {
+    const container = document.getElementById('financa-kartelat');
+    if (!container || !data) return;
+    try {
+        const res = await fetch('/api/finances/stats?date=' + encodeURIComponent(data));
+        if (!res.ok) throw new Error('Nuk u ngarkuan financat për datën e zgjedhur.');
+        const d = await res.json();
+        const euro = value => (Number(value) || 0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
+        container.innerHTML = `
+        <div class="card-pro p-12 rounded-[3rem] border-b-8 border-blue-600">
+          <i data-lucide="trending-up" class="text-blue-500 mb-4"></i>
+          <p class="opacity-40 text-sm font-bold uppercase tracking-tighter">Punë Totale</p>
+          <h2 class="text-5xl font-black italic mt-2 tracking-tighter">${euro(d.vizit_totale)}</h2>
+        </div>
+        <div class="card-pro p-12 rounded-[3rem] border-b-8 border-green-500">
+          <i data-lucide="check-circle" class="text-green-500 mb-4"></i>
+          <p class="opacity-40 text-sm font-bold uppercase tracking-tighter">Paguar (Kesh)</p>
+          <h2 class="text-5xl font-black italic mt-2 tracking-tighter">${euro(d.pagesat_totale)}</h2>
+        </div>
+        <button type="button" onclick="hapListaBorxheve()" class="card-pro p-12 rounded-[3rem] border-b-8 border-red-600 text-left cursor-pointer hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500" aria-label="Shfaq pacientët me borxh">
+          <i data-lucide="alert-circle" class="text-red-500 mb-4"></i>
+          <p class="opacity-40 text-sm font-bold uppercase tracking-tighter">Borxhi Mbetur</p>
+          <h2 class="text-5xl font-black italic mt-2 text-red-500 tracking-tighter">${euro(d.borxhi)}</h2>
+          <p class="text-xs text-slate-400 mt-3">Kliko për listën e pacientëve me borxh</p>
+        </button>`;
+        if (window.lucide) lucide.createIcons();
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p class="text-red-400">Gabim gjatë ngarkimit të financave.</p>';
+    }
+}
+
+function dataLokaleFinanciare(rawDate) {
+    if (!rawDate) return '';
+    const date = new Date(rawDate);
+    if (Number.isNaN(date.getTime())) return String(rawDate).slice(0, 10);
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Belgrade', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(date);
+    const get = type => parts.find(part => part.type === type)?.value || '';
+    return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+async function hapListaBorxheve() {
+    const selectedDate = document.getElementById('financa-data')?.value || '';
+    if (!selectedDate) return alert('Zgjidhni datën për të parë borxhet.');
+    let modal = document.getElementById('lista-borxheve-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'lista-borxheve-modal';
+        modal.className = 'fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4';
+        modal.innerHTML = `<div class="w-[min(1000px,96vw)] max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-slate-900 p-6 md:p-8 shadow-2xl">
+          <div class="flex items-start justify-between gap-4 mb-6"><div><h3 class="text-2xl font-black italic uppercase text-red-400">Pacientët me borxh</h3><p id="lista-borxheve-data" class="text-sm text-slate-400 mt-1"></p></div><button type="button" onclick="mbyllListaBorxheve()" class="rounded-xl bg-slate-800 px-4 py-2 font-bold hover:bg-slate-700">Mbyll ✕</button></div>
+          <div id="lista-borxheve-permbajtja" class="space-y-3"></div>
+        </div>`;
+        modal.addEventListener('click', event => { if (event.target === modal) mbyllListaBorxheve(); });
+        document.body.appendChild(modal);
+    }
+    modal.classList.remove('hidden');
+    document.getElementById('lista-borxheve-data').textContent = `Data: ${selectedDate}`;
+    const content = document.getElementById('lista-borxheve-permbajtja');
+    content.innerHTML = '<p class="text-slate-400">Duke ngarkuar borxhet...</p>';
+    try {
+        const response = await fetch('/api/patients', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Nuk u ngarkuan pacientët.');
+        const patients = await response.json();
+        const debts = [];
+        patients.forEach(patient => {
+            (Array.isArray(patient.historia) ? patient.historia : []).forEach(visit => {
+                const rawDate = visit.data || patient.krijuar_me || '';
+                if (dataLokaleFinanciare(rawDate) !== selectedDate) return;
+                const total = Number(visit.cmimi_total) || 0;
+                const paid = Number(visit.pagesa_e_bere) || 0;
+                const debt = Math.max(0, total - paid);
+                if (debt > 0.009) debts.push({ patient, visit, total, paid, debt });
+            });
+        });
+        const euro = value => (Number(value) || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        if (!debts.length) {
+            content.innerHTML = '<div class="rounded-2xl border border-white/10 bg-slate-800/50 p-8 text-center text-slate-400">Nuk ka pacientë me borxh për këtë datë.</div>';
+            return;
+        }
+        content.innerHTML = debts.map(({ patient, visit, total, paid, debt }) => {
+            const name = [patient.emri_pacientit, patient.mbiemri].filter(Boolean).join(' ') || patient.emri || 'Pacient';
+            const analyses = visit.analizat || visit.sherbimi || 'Analiza laboratorike';
+            return `<div class="rounded-2xl border border-red-500/20 bg-slate-800/60 p-4 md:p-5">
+              <div class="flex flex-wrap items-start justify-between gap-4"><div class="min-w-0 flex-1"><p class="font-black text-lg text-white">${escapeHtmlClinicIQ(name)}</p><p class="text-sm text-slate-400 mt-1">${escapeHtmlClinicIQ(analyses)}</p><p class="text-xs text-slate-500 mt-2">Telefoni: ${escapeHtmlClinicIQ(patient.telefoni || 'Nuk është shënuar')}</p></div><div class="text-right"><p class="text-xs uppercase text-slate-400">Borxhi</p><p class="text-2xl font-black text-red-400">${euro(debt)}</p></div></div>
+              <div class="grid grid-cols-2 gap-3 mt-4 md:grid-cols-3"><div class="rounded-xl bg-slate-900 p-3"><p class="text-xs text-slate-400">Totali</p><p class="font-bold">${euro(total)}</p></div><div class="rounded-xl bg-slate-900 p-3"><p class="text-xs text-slate-400">Paguar</p><p class="font-bold text-green-400">${euro(paid)}</p></div><div class="rounded-xl bg-slate-900 p-3 col-span-2 md:col-span-1"><p class="text-xs text-slate-400">Data e vizitës</p><p class="font-bold">${escapeHtmlClinicIQ(selectedDate)}</p></div></div>
+            </div>`;
+        }).join('') + `<div class="rounded-2xl bg-red-500/10 border border-red-500/20 p-4 flex items-center justify-between gap-4"><span class="font-black uppercase text-sm">Borxhi total i listës</span><span class="text-2xl font-black text-red-400">${euro(debts.reduce((sum, item) => sum + item.debt, 0))}</span></div>`;
+    } catch (error) {
+        console.error('Gabim gjatë ngarkimit të listës së borxheve:', error);
+        content.innerHTML = '<p class="text-red-400">Lista e borxheve nuk mundi të ngarkohej. Provo përsëri.</p>';
+    }
+}
+
+function escapeHtmlClinicIQ(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
+function mbyllListaBorxheve() {
+    const modal = document.getElementById('lista-borxheve-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function printoKartelenProfesionale(index) {
+    const p = pts[index]; 
+    if (!p) return alert("Pacienti nuk u gjet!");
+
+    const dritarjaPrint = window.open('', '', 'height=800,width=1000');
+    
+    // Marrim të dhënat e vizitës së fundit
+    const vizita = p.historia[p.historia.length - 1] || {};
+    const dataSot = new Date().toLocaleDateString('sq-AL');
+    const oraSot = new Date().toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' });
+
+    dritarjaPrint.document.write(`
+        <html>
+            <head>
+                <title>Raporti - ${p.emri}</title>
+                <style>
+                    body { font-family: sans-serif; padding: 40px; }
+                    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
+                    .info-row { display: flex; justify-content: space-between; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
+                    .promo-footer { margin-top: 26px; padding: 14px 16px; background: #e8f6fb; border-top: 3px solid #9bdcf2; color: #174b70; display: grid; grid-template-columns: 0.9fr 1.4fr; gap: 18px; page-break-inside: avoid; }
+                    .promo-contact { font-size: 10px; line-height: 1.8; overflow-wrap: anywhere; }
+                    .promo-title { text-align: right; font-size: 12px; font-weight: 800; color: #174b70; margin: 0 0 7px; }
+                    .promo-tagline { text-align: right; font-size: 9px; color: #397b9f; margin: 0 0 9px; }
+                    .promo-devices { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 7px; text-align: center; }
+                    .promo-device { font-size: 9px; font-weight: 700; line-height: 1.35; padding: 7px 4px; background: rgba(255,255,255,.8); border: 1px solid #c5e8f4; }
+                    .promo-device span { display: block; font-weight: 400; font-style: italic; color: #397b9f; margin-top: 3px; }
+                    @media print { .promo-footer { break-inside: avoid; } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <img src="/logo-fj.png" alt="FJ Diagnostic Laboratory" style="width:150px;max-height:100px;object-fit:contain;display:block;margin:0 auto 10px;"><h1 style="margin:0; color:#123c52;">FJ DIAGNOSTIC LABORATORY</h1>
+                    <p>RAPORT I VIZITËS LABORATORIKE</p>
+                </div>
+                
+                <div class="info-row">
+                    <div>
+                        <p><strong>Pacienti:</strong> ${p.emri}</p>
+                        <p><strong>Telefoni:</strong> ${p.telefoni || '---'}</p>
+                        <p><strong>Qyteti:</strong> ${p.qyteti || '---'}</p>
+                        <p><strong>Gjinia:</strong> ${p.gjinia || '---'}</p>
+                        <p><strong>ID:</strong> ${p._id ? p._id.slice(-6).toUpperCase() : '---'}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p><strong>Data:</strong> ${dataSot}</p>
+                        <p><strong>Ora:</strong> ${oraSot}</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3>ANALIZAT:</h3>
+                    <p style="font-size: 18px;">${vizita.analizat || vizita.sherbimi || 'Analiza Laboratorike'}</p>
+                    <p><strong>Totali:</strong> ${vizita.cmimi_total || 0}€</p>
+                </div>
+
+                <div style="margin-top: 50px; text-align: right;">
+                    <p>_______________________</p>
+                    <p>Nënshkrimi i Laborantit</p>
+                </div>
+            
+                <section class="promo-footer">
+                    <div class="promo-contact"><strong>KONTAKTONI FJ DIAGNOSTIC LABORATORY</strong><br>☎ 044 145 097<br>✉ fj.diagnosticlab@gmail.com<br>⌖ VILJEM VOKER, 21, Bellobrad, Dragash</div>
+                    <div><p class="promo-title">APARATURA MODERNE LABORATORIKE</p><p class="promo-tagline">Teknologji e avancuar për analiza laboratorike</p><div class="promo-devices"><div class="promo-device">Pentra 400<span>Biokimi</span></div><div class="promo-device">MAGLUMI Snibe 800<span>Imunologji</span></div><div class="promo-device">Sysmex 5DF<span>Hematologji</span></div><div class="promo-device">Finecare<span>Imunologji</span></div></div></div>
+                </section>
+            </body>
+        </html>
+    `);
+
+    dritarjaPrint.document.close();
+    
+    setTimeout(() => {
+        dritarjaPrint.print();
+        dritarjaPrint.close();
+    }, 500);
+}
+
+
+</script>
+<div id="raporti-print" class="hidden">
+        <div style="text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="margin: 0; color: #1e40af; font-size: 32px; letter-spacing: 2px;">CLINICIQ</h1>
+            <p style="margin: 5px 0; font-weight: bold; text-transform: uppercase;">Laboratori Biokimik-Hematologjik</p>
+            <p style="margin: 0; font-size: 12px; color: #475569;">Adresa: Rruga Kryesore, Prishtinë | Tel: +383 44 000 000</p>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px;">
+            <div>
+                <p><strong>Pacienti:</strong> <span id="p-emri"></span></p>
+                <p><strong>ID:</strong> <span id="p-id"></span></p>
+            </div>
+            <div style="text-align: right;">
+                <p><strong>Data:</strong> <span id="p-data"></span></p>
+                <p><strong>Ora:</strong> <span id="p-ora"></span></p>
+            </div>
+        </div>
+
+        <div id="p-tabela-content"></div>
+    </div>
+
+</body>
+</html>
